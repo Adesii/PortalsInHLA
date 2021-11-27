@@ -1,0 +1,18 @@
+{
+    "Lua.diagnostics.globals": [
+        "Entities",
+        "Vector",
+        "DebugDrawLine",
+        "RotateOrientation",
+        "RotationDelta",
+        "VectorToAngles",
+        "vlua",
+        "SpawnEntityFromTableSynchronous",
+        "thisEntity",
+        "ListenToGameEvent",
+        "GetLocalPlayer",
+        "TraceLine",
+        "player",
+        "ParticleManager"
+    ]
+}
