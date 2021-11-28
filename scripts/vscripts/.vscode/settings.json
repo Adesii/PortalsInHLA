@@ -13,6 +13,13 @@
         "GetLocalPlayer",
         "TraceLine",
         "player",
-        "ParticleManager"
+        "ParticleManager",
+        "DebugDrawSphere",
+        "PrecacheResource",
+        "tickrate",
+        "QAngle",
+        "QAngles",
+        "GetFrameCount",
+        "EntFire"
     ]
 }

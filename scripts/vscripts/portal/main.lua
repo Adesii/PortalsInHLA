@@ -3,7 +3,7 @@ local portaly = 75
 local portalz = 20
 local detectRadius = portaly
 
-local tickrate = 0.05
+tickrate = _G.tickrate or 0.05
 
 local LightOmniTemplate = {
     targetname = "bluePortal_light_omni",
@@ -28,7 +28,7 @@ local LogicScriptTemplate = {
     Group01 = "bluePortal_light_omni",
     Group02 = "bluePortal_particles"
 }
-Colors = {
+Colors = _G.Colors or {
     Blue = "blue",
     Orange = "orange"
 }
@@ -39,6 +39,7 @@ PortalManager = _G.PortalManager or {
     BluePortalGroup = {},
     OrangePortalGroup = {}
 }
+local laspplayerteleport = 0
 
 function PortalManager:init()
     PortalManager.ColorEnts = {
@@ -46,6 +47,7 @@ function PortalManager:init()
         [Colors.Blue] = Entities:FindByName(nil, "bluePortal")
     }
     local loopColor = Colors.Blue
+
 
     for i = 1, 2, 1 do
         -- print("i: " .. i)
@@ -58,20 +60,42 @@ function PortalManager:init()
             ent = PortalManager:GetPortalGroup(loopColor)[1]
         end
 
+        
+
+
         -- print(ent)
         if ent then
+            if laspplayerteleport- GetFrameCount() < 0 and PortalManager:CanTeleport(player, loopColor) then
+                if loopColor == Colors.Blue then
+                    
+                    player:GetHMDAnchor():SetAbsOrigin((PortalManager.OrangePortalGroup[1]:GetAbsOrigin()+PortalManager.OrangePortalGroup[1]:GetForwardVector()*30)+(player:GetHMDAnchor():GetOrigin()-player:GetHMDAvatar():GetOrigin()))
+                else
+                    player:GetHMDAnchor():SetAbsOrigin((PortalManager.BluePortalGroup[1]:GetAbsOrigin()+PortalManager.BluePortalGroup[1]:GetForwardVector()*30)+(player:GetHMDAnchor():GetOrigin()-player:GetHMDAvatar():GetOrigin()))
+                end
+                laspplayerteleport = GetFrameCount() + 100
+            end
             local dir = ent:GetForwardVector()
             local org = ent:GetOrigin()
             local min = Vector(portalx / 2, portaly / 2, portalz / 2)
             local max = Vector(-(portalx / 2), -(portaly / 2), -(portalz / 2))
             local portableEnt = Entities:FindAllInSphere(org, detectRadius)
             DebugDrawLine(org, org + (dir * 10), 255, 0, 0, true, 1)
+            
             for key, value in pairs(portableEnt) do
-                if portableEnt[key]:GetClassname() ~= "info_particle_system" and portableEnt[key]:GetClassname() ~=
-                    "prop_static" and portableEnt[key]:GetClassname() ~= "light_omni" then
+                local classname = portableEnt[key]:GetClassname()
+                    
+                if portableEnt[key]:GetOwner() then
+                    local ownerentity = portableEnt[key]:GetOwner():GetClassname()
+                    if ownerentity == "player" or ownerentity == "hl_prop_vr_hand" or ownerentity == "prop_hmd_avatar" or ownerentity == "hl_vr_teleport_controller" then
+                        return tickrate
+                    end
+                end
+                
+                if classname ~= "info_particle_system" and classname ~=
+                    "prop_static" and classname ~= "light_omni" and classname ~= "prop_handpose" and classname ~= "player_backpack" then
                     if PortalManager:CanTeleport(portableEnt[key], loopColor) then
+                        print("Teleporting " .. portableEnt[key]:GetClassname())
                         PortalManager:teleport(portableEnt[key], loopColor)
-
                     end
                 end
                 -- DebugDrawBoxDirection(org,min,max,dir,Vector(0,0,255),20,0.1)
@@ -171,12 +195,18 @@ function PortalManager:CreatePortalAt(position, normal, colortype)
         player)
     ParticleManager:SetParticleControl(particles, 5, PortalManager.ColorEnts[colortype]:GetOrigin())
 
-    local projectedTexture = "materials/portal/portal_" .. colortype .. ".vmat"
+    local teleportpoint = SpawnEntityFromTableSynchronous("point_teleport",{
+        targetname = colortype .. "Portal_teleport",
+        origin = aimat:GetOrigin() + normal * 50,
+        target = "!player",
+        teleport_parented_entities = "1",
+    })
 
     LogicScriptTemplate.targetname = colortype .. "LogicScript"
     LogicScriptTemplate.Group00 = colortype .. "Portal_aimat"
     LogicScriptTemplate.Group01 = colortype .. "Portal_light_omni"
     LogicScriptTemplate.Group02 = colortype .. "Portal_particles"
+    LogicScriptTemplate.Group03 = colortype .. "Portal_teleport"
     local logic = SpawnEntityFromTableSynchronous("logic_script", LogicScriptTemplate)
 
     if particles then
@@ -184,9 +214,9 @@ function PortalManager:CreatePortalAt(position, normal, colortype)
     end
 
     if colortype == Colors.Blue then
-        PortalManager.BluePortalGroup = {aimat, Light, particles, particlesEnt, logic}
+        PortalManager.BluePortalGroup = {aimat, Light, particles, particlesEnt, logic,teleportpoint}
     elseif colortype == Colors.Orange then
-        PortalManager.OrangePortalGroup = {aimat, Light, particles, particlesEnt, logic}
+        PortalManager.OrangePortalGroup = {aimat, Light, particles, particlesEnt, logic,teleportpoint}
     end
 
     print("Portal Created")
@@ -220,7 +250,10 @@ end
 currentPortal = Colors.Blue
 
 function PlayerShoot()
-    player = player or GetListenServerHost()
+    player = player or Entities:GetLocalPlayer()
+    if not player:GetHMDAvatar() then
+        return
+    end
     if player:IsUsePressed() then
         local traceTable = {
             startpos = player:EyePosition(),
@@ -251,9 +284,13 @@ function Activate()
     thisEntity:SetThink(function()
         return PortalManager:init()
     end, "flybyUpdater", 0.5)
+    player = player or Entities:GetLocalPlayer()
+    
     thisEntity:SetThink(function()
         return PlayerShoot()
     end, "shootUpdater", 2)
+
+    _G.PortalManager =_G.PortalManager or PortalManager
 end
 function Precache(context)
     print("Portal Precache")

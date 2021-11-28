@@ -110,9 +110,42 @@
 				]
 				default_root_bone_name = ""
 			},
+			{
+				_class = "AttachmentList"
+				children = 
+				[
+					{
+						_class = "Attachment"
+						name = "innerlaser"
+						parent_bone = "barrel"
+						relative_origin = [ 0.0, 0.087406, -0.37468 ]
+						relative_angles = [ 0.0, 0.0, 0.0 ]
+						weight = 1.0
+						ignore_rotation = false
+					},
+					{
+						_class = "Attachment"
+						name = "light"
+						parent_bone = "handshell"
+						relative_origin = [ 2.375298, 0.0, 2.850098 ]
+						relative_angles = [ 0.0, 0.0, 0.0 ]
+						weight = 1.0
+						ignore_rotation = false
+					},
+					{
+						_class = "Attachment"
+						name = "firebarrel"
+						parent_bone = "muzzle"
+						relative_origin = [ 5.516394, 0.0, -0.335439 ]
+						relative_angles = [ 0.0, 0.0, 0.0 ]
+						weight = 1.0
+						ignore_rotation = false
+					},
+				]
+			},
 		]
 		model_archetype = "animated_model"
-		primary_associated_entity = "prop_dynamic"
+		primary_associated_entity = "npc_furniture"
 		anim_graph_name = "animgraphs/portalgun.vanmgrph"
 	}
 }
