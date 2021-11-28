@@ -24,3 +24,8 @@ omnisharp.json
 *.zip
 *.vpk
 *.vpcf_c
+*.blend3
+*.blend5
+*.blend1
+*.blend2
+*.blend4

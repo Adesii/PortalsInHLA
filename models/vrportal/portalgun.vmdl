@@ -1,0 +1,118 @@
+<!-- kv3 encoding:text:version{e21c7f3c-8a33-41c5-9977-a76d3a32aa0d} format:modeldoc28:version{fb63b6ca-f435-4aa0-a2c7-c66ddc651dca} -->
+{
+	rootNode = 
+	{
+		_class = "RootNode"
+		children = 
+		[
+			{
+				_class = "MaterialGroupList"
+				children = 
+				[
+					{
+						_class = "DefaultMaterialGroup"
+						remaps = 
+						[
+							{
+								from = "models/weapons/w_models/portalgun/w_portalgun.vmat"
+								to = "materials/models/weapons/w_models/portalgun/w_portalgun.vmat"
+							},
+							{
+								from = "glass.vmat"
+								to = "materials/vrportal/portalglass.vmat"
+							},
+						]
+						use_global_default = false
+						global_default_material = ""
+					},
+				]
+			},
+			{
+				_class = "RenderMeshList"
+				children = 
+				[
+					{
+						_class = "RenderMeshFile"
+						filename = "models/vrportal/portalgun.dmx"
+						import_scale = 1.0
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+				]
+			},
+			{
+				_class = "AnimationList"
+				children = 
+				[
+					{
+						_class = "AnimFile"
+						name = "fanspin"
+						activity_name = ""
+						activity_weight = 1
+						weight_list_name = ""
+						fade_in_time = 0.2
+						fade_out_time = 0.2
+						looping = true
+						delta = false
+						worldSpace = false
+						hidden = false
+						anim_markup_ordered = false
+						disable_compression = false
+						source_filename = "models/vrportal/anims/fanspin.dmx"
+						start_frame = -1
+						end_frame = -1
+						framerate = -1.0
+						reverse = false
+					},
+					{
+						_class = "AnimFile"
+						name = "idle"
+						activity_name = ""
+						activity_weight = 1
+						weight_list_name = ""
+						fade_in_time = 0.2
+						fade_out_time = 0.2
+						looping = true
+						delta = false
+						worldSpace = false
+						hidden = false
+						anim_markup_ordered = false
+						disable_compression = false
+						source_filename = "models/vrportal/anims/idle.dmx"
+						start_frame = -1
+						end_frame = -1
+						framerate = -1.0
+						reverse = false
+					},
+					{
+						_class = "AnimFile"
+						name = "fire"
+						activity_name = ""
+						activity_weight = 1
+						weight_list_name = ""
+						fade_in_time = 0.2
+						fade_out_time = 0.2
+						looping = false
+						delta = false
+						worldSpace = false
+						hidden = false
+						anim_markup_ordered = false
+						disable_compression = false
+						source_filename = "models/vrportal/anims/fire.dmx"
+						start_frame = -1
+						end_frame = -1
+						framerate = -1.0
+						reverse = false
+					},
+				]
+				default_root_bone_name = ""
+			},
+		]
+		model_archetype = "animated_model"
+		primary_associated_entity = "prop_dynamic"
+		anim_graph_name = "animgraphs/portalgun.vanmgrph"
+	}
+}
