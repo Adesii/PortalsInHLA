@@ -111,7 +111,6 @@ end
 function PortalManager:CanTeleport(ent, LoopColor)
     local org = PortalManager:GetConnectedPortal(LoopColor)
     if not org then
-        print("PortalManager:CanTeleport: No Portal")
         return false
     end
     org = PortalManager:GetPortalGroup(LoopColor)[1]

@@ -118,7 +118,7 @@
 						_class = "Attachment"
 						name = "innerlaser"
 						parent_bone = "barrel"
-						relative_origin = [ 0.0, 0.087406, -0.37468 ]
+						relative_origin = [ 0.778213, 0.087406, -0.37468 ]
 						relative_angles = [ 0.0, 0.0, 0.0 ]
 						weight = 1.0
 						ignore_rotation = false
@@ -127,8 +127,8 @@
 						_class = "Attachment"
 						name = "light"
 						parent_bone = "handshell"
-						relative_origin = [ 2.375298, 0.0, 2.850098 ]
-						relative_angles = [ 0.0, 0.0, 0.0 ]
+						relative_origin = [ 3.059594, 0.0, 3.719155 ]
+						relative_angles = [ 90.0, 0.0, 0.0 ]
 						weight = 1.0
 						ignore_rotation = false
 					},
@@ -137,6 +137,15 @@
 						name = "firebarrel"
 						parent_bone = "muzzle"
 						relative_origin = [ 5.516394, 0.0, -0.335439 ]
+						relative_angles = [ 0.0, 0.0, 0.0 ]
+						weight = 1.0
+						ignore_rotation = false
+					},
+					{
+						_class = "Attachment"
+						name = "innerlaser_end"
+						parent_bone = "barrel"
+						relative_origin = [ 5.576752, 0.087406, -0.37468 ]
 						relative_angles = [ 0.0, 0.0, 0.0 ]
 						weight = 1.0
 						ignore_rotation = false

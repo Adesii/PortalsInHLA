@@ -33,8 +33,6 @@ end
 
 function PortalGun:init()
     print("PortalGun init")
-    PortalGun.BarrelParticleIndex = ParticleManager:CreateParticle("particles/portalgun_barrel.vpcf", 1, thisEntity)
-    ParticleManager:SetParticleControlEnt(PortalGun.BarrelParticleIndex, 0, thisEntity, 1, "innerlaser",Vector(0, 0, 0), true)
     local player = player or Entities:GetLocalPlayer()
     PortalGun.Player = player
     PortalGun.HoldingHand = player:GetHMDAvatar():GetVRHand(1)
@@ -46,6 +44,32 @@ function PortalGun:init()
     thisEntity:SetOwner(player)
 
     PortalGun.entity = thisEntity
+
+
+    PortalGun.BarrelParticleSystem = SpawnEntityFromTableSynchronous("info_particle_system", {
+        targetname = "portalgun_barrel",
+        effect_name = "particles/portalgun_barrel.vpcf",
+        cpoint0 = "portalgun",
+    })
+    
+    PortalGun.LightParticleSystem = SpawnEntityFromTableSynchronous("info_particle_system", {
+        targetname = "portalgun_light",
+        effect_name = "particles/portalgun_light.vpcf",
+        cpoint0 = "portalgun",
+    })
+    --PortalGun.LightParticleSystem:SetAbsOrigin(thisEntity:GetAbsOrigin())
+    
+    PortalGun.BarrelParticleIndex = ParticleManager:CreateParticleForPlayer("particles/portalgun_barrel.vpcf", 1, PortalGun.BarrelParticleSystem,player)
+    PortalGun.LightParticleIndex = ParticleManager:CreateParticleForPlayer("particles/portalgun_light.vpcf", 1, PortalGun.LightParticleSystem,player)
+    ParticleManager:SetParticleAlwaysSimulate(PortalGun.BarrelParticleIndex)
+    ParticleManager:SetParticleAlwaysSimulate(PortalGun.LightParticleIndex)
+    
+    --ParticleManager:SetParticleControl(PortalGun.BarrelParticleIndex, 5,_G.PortalManager.ColorEnts[Colors.Blue]:GetOrigin())
+    ParticleManager:SetParticleControlEnt(PortalGun.BarrelParticleIndex, 0,PortalGun.entity,5,"innerlaser",Vector(0,0,0),true)
+    ParticleManager:SetParticleControlEnt(PortalGun.BarrelParticleIndex, 1,PortalGun.entity,5,"innerlaser_end",Vector(0,0,0),true)
+    ParticleManager:SetParticleControl(PortalGun.BarrelParticleIndex, 5,Vector(0,0.4,1))
+    ParticleManager:SetParticleControlEnt(PortalGun.LightParticleIndex, 0,PortalGun.entity,5,"light",Vector(0,0,0),true)
+    ParticleManager:SetParticleControl(PortalGun.LightParticleIndex, 5,Vector(0,0.4,1))
 
 end
 
@@ -74,6 +98,9 @@ function PortalGun:shoot()
         
         PortalGun.CanFire = false
         PortalGun.HoldingHand:FireHapticPulse(1)
+
+        ParticleManager:SetParticleControl(PortalGun.BarrelParticleIndex, 5,_G.PortalManager.ColorEnts[Colors.Blue]:GetOrigin())
+        ParticleManager:SetParticleControl(PortalGun.LightParticleIndex, 5,_G.PortalManager.ColorEnts[Colors.Blue]:GetOrigin())
     end
     if PortalGun.Player:IsDigitalActionOnForHand(0,PortalGun.OrangePortalButton) then
         print("Orange Portal")
@@ -96,6 +123,9 @@ function PortalGun:shoot()
         
         PortalGun.CanFire = false
         PortalGun.HoldingHand:FireHapticPulse(1)
+
+        ParticleManager:SetParticleControl(PortalGun.BarrelParticleIndex, 5,_G.PortalManager.ColorEnts[Colors.Orange]:GetOrigin())
+        ParticleManager:SetParticleControl(PortalGun.LightParticleIndex, 5,_G.PortalManager.ColorEnts[Colors.Orange]:GetOrigin())
     end
     return 0.1
 end

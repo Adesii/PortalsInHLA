@@ -13,6 +13,7 @@
 			m_vecCP2Pos = [ -5.0, 0.0, 0.0 ]
 			m_vecCP3Pos = [ 0.0, 0.0, 0.0 ]
 			m_vecCP4Pos = [ 0.0, 0.3, 0.5 ]
+			m_nCP1 = 2
 		},
 	]
 	m_Emitters = 
@@ -29,8 +30,7 @@
 			m_flNumToAssign = 50.0
 			m_PathParams = 
 			{
-				m_nStartControlPointNumber = 1
-				m_nEndControlPointNumber = 2
+				m_nEndControlPointNumber = 1
 			}
 		},
 	]
@@ -855,6 +855,34 @@
 					m_entityName = "self"
 				},
 			]
+		},
+	]
+	m_Operators = 
+	[
+		{
+			_class = "C_OP_FadeAndKill"
+			m_bDisableOperator = true
+		},
+		{
+			_class = "C_OP_BasicMovement"
+		},
+		{
+			_class = "C_OP_PositionLock"
+			m_bLockRot = true
+		},
+		{
+			_class = "C_OP_MaintainSequentialPath"
+			m_flNumToAssign = 30.0
+			m_PathParams = 
+			{
+				m_nStartControlPointNumber = 1
+			}
+		},
+	]
+	m_Children = 
+	[
+		{
+			m_ChildRef = resource:"particles/portalgun_light_castshadow.vpcf"
 		},
 	]
 }
