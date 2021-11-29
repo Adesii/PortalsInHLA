@@ -118,6 +118,9 @@ function PortalManager:CanTeleport(ent, LoopColor)
         return false
     end
     org = PortalManager:GetPortalGroup(LoopColor)[1]
+    if org == nil then
+        return false
+    end
 
     local v = org:TransformPointWorldToEntity(ent:GetOrigin())
 
@@ -236,15 +239,16 @@ function PortalManager:ClosePortal(colortype)
             else
                 PortalManager.BluePortalGroup[key]:Kill()
             end
+            PortalManager.BluePortalGroup[key] = nil
         end
     else
         for key, value in pairs(PortalManager.OrangePortalGroup) do
             if key == 3 then
                 ParticleManager:DestroyParticle(PortalManager.OrangePortalGroup[key], true)
-
             else
                 PortalManager.OrangePortalGroup[key]:Kill()
             end
+            PortalManager.OrangePortalGroup[key] = nil
         end
     end
 end
@@ -324,4 +328,9 @@ function SpawnBluePortal(args)
     end
     local caller = args.caller
     PortalManager:CreatePortalAt(caller:GetOrigin(), caller:GetForwardVector(), Colors.Blue)
+end
+
+function CloseAllPortals(args)
+    PortalManager:ClosePortal(Colors.Blue)
+    PortalManager:ClosePortal(Colors.Orange)
 end
