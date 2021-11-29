@@ -268,8 +268,13 @@ function PlayerShoot()
             endpos = player:EyePosition() + player:GetForwardVector() * 1000,
             ignore = player
         }
+
         TraceLine(traceTable)
         if traceTable.hit then
+            if traceTable.enthit:GetClassname() == "func_brush" then
+                return tickrate
+            end
+        
             if Debugging then
                 DebugDrawLine(traceTable.startpos, traceTable.pos, 0, 255, 0, false, 1)
                 DebugDrawLine(traceTable.pos, traceTable.pos + traceTable.normal * 10, 0, 0, 255, false, 1)
