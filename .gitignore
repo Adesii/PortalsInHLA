@@ -29,3 +29,4 @@ omnisharp.json
 *.blend1
 *.blend2
 *.blend4
+scripts/vscripts/.vscode/settings.json

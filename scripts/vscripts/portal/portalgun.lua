@@ -1,4 +1,5 @@
 tickrate = _G.tickrate or 0.05
+Debugging = _G.Debugging or false
 Colors = _G.Colors or {
     Blue = "blue",
     Orange = "orange"
@@ -25,16 +26,19 @@ function Activate()
     print("PortalGun Activated")
     thisEntity:SetThink(function()
         return PortalGun:init()
-    end, "portalguninit", 0.1)
+    end, "portalguninit", 0.5)
     thisEntity:SetThink(function()
         return PortalGun:shoot()
-    end, "portalgunshooting", 1)
+    end, "portalgunshooting", 1.2)
 end
 
 function PortalGun:init()
     print("PortalGun init")
     local player = player or Entities:GetLocalPlayer()
     PortalGun.Player = player
+    if not player:GetHMDAvatar() then
+        return
+    end
     PortalGun.HoldingHand = player:GetHMDAvatar():GetVRHand(1)
     --PortalGun.HoldingHand:AddHandAttachment(thisEntity)
     thisEntity:SetParent(PortalGun.HoldingHand:FirstMoveChild(), "grabbity_glove")
@@ -75,11 +79,16 @@ end
 
 function PortalGun:shoot()
     
+    if not player:GetHMDAvatar() then
+        return
+    end
     if PortalGun.CanFire == false then
         return 0.1
     end
     if PortalGun.Player:IsDigitalActionOnForHand(0,PortalGun.BluePortalButton) then
-        print("Blue Portal")
+        if Debugging then
+            print("Blue Portal")
+        end
         PortalGun.entity:SetGraphParameterBool("bfired",true)
         PortalGun.MuzzleIndex = PortalGun.MuzzleIndex or thisEntity:ScriptLookupAttachment(PortalGun.MuzzleAttachment)
         local gunmuzzle = thisEntity:GetAttachmentOrigin(PortalGun.MuzzleIndex)
@@ -91,8 +100,10 @@ function PortalGun:shoot()
         }
         TraceLine(traceTable)
         if traceTable.hit then
-            DebugDrawLine(traceTable.startpos, traceTable.pos, 0, 255, 0, false, 1)
-            DebugDrawLine(traceTable.pos, traceTable.pos + traceTable.normal * 10, 0, 0, 255, false, 1)
+            if Debugging then
+                DebugDrawLine(traceTable.startpos, traceTable.pos, 0, 255, 0, false, 1)
+                DebugDrawLine(traceTable.pos, traceTable.pos + traceTable.normal * 10, 0, 0, 255, false, 1)
+            end
             _G.PortalManager:CreatePortalAt(traceTable.pos, traceTable.normal, Colors.Blue)
         end
         
@@ -103,7 +114,9 @@ function PortalGun:shoot()
         ParticleManager:SetParticleControl(PortalGun.LightParticleIndex, 5,_G.PortalManager.ColorEnts[Colors.Blue]:GetOrigin())
     end
     if PortalGun.Player:IsDigitalActionOnForHand(0,PortalGun.OrangePortalButton) then
-        print("Orange Portal")
+        if Debugging then
+            print("Orange Portal")
+        end
         PortalGun.entity:SetGraphParameterBool("bfired",true)
         PortalGun.MuzzleIndex = PortalGun.MuzzleIndex or thisEntity:ScriptLookupAttachment(PortalGun.MuzzleAttachment)
         local gunmuzzle = thisEntity:GetAttachmentOrigin(PortalGun.MuzzleIndex)
@@ -115,8 +128,10 @@ function PortalGun:shoot()
         }
         TraceLine(traceTable)
         if traceTable.hit then
-            DebugDrawLine(traceTable.startpos, traceTable.pos, 0, 255, 0, false, 1)
-            DebugDrawLine(traceTable.pos, traceTable.pos + traceTable.normal * 10, 0, 0, 255, false, 1)
+            if Debugging then
+                DebugDrawLine(traceTable.startpos, traceTable.pos, 0, 255, 0, false, 1)
+                DebugDrawLine(traceTable.pos, traceTable.pos + traceTable.normal * 10, 0, 0, 255, false, 1)
+            end
             _G.PortalManager:CreatePortalAt(traceTable.pos, traceTable.normal, Colors.Orange)
         end
 
@@ -132,10 +147,8 @@ end
 
 
 function AnimGraphListener(name,status)
-    print("PortalGun AnimGraphListener")
-    print(name,status)
     if name == "Fired" and status == 2 then
-            print("PortalGun AnimGraphListener Fired")
+            --print("PortalGun AnimGraphListener Fired")
             PortalGun.CanFire = true
     end
 end

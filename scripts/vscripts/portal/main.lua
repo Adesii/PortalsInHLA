@@ -3,6 +3,9 @@ local portaly = 75
 local portalz = 20
 local detectRadius = portaly
 
+Debugging = _G.Debugging or false
+
+
 tickrate = _G.tickrate or 0.05
 
 local LightOmniTemplate = {
@@ -43,8 +46,8 @@ local laspplayerteleport = 0
 
 function PortalManager:init()
     PortalManager.ColorEnts = {
-        [Colors.Orange] = Entities:FindByName(nil, "orangePortal"),
-        [Colors.Blue] = Entities:FindByName(nil, "bluePortal")
+        [Colors.Orange] = Entities:FindByName(nil, "@OrangePortalColor"),
+        [Colors.Blue] = Entities:FindByName(nil, "@BluePortalColor")
     }
     local loopColor = Colors.Blue
 
@@ -65,9 +68,8 @@ function PortalManager:init()
 
         -- print(ent)
         if ent then
-            if laspplayerteleport- GetFrameCount() < 0 and PortalManager:CanTeleport(player, loopColor) then
+            if laspplayerteleport- GetFrameCount() < 0 and PortalManager:CanTeleport(player, loopColor) and player:GetHMDAvatar() ~= nil then
                 if loopColor == Colors.Blue then
-                    
                     player:GetHMDAnchor():SetAbsOrigin((PortalManager.OrangePortalGroup[1]:GetAbsOrigin()+PortalManager.OrangePortalGroup[1]:GetForwardVector()*30)+(player:GetHMDAnchor():GetOrigin()-player:GetHMDAvatar():GetOrigin()))
                 else
                     player:GetHMDAnchor():SetAbsOrigin((PortalManager.BluePortalGroup[1]:GetAbsOrigin()+PortalManager.BluePortalGroup[1]:GetForwardVector()*30)+(player:GetHMDAnchor():GetOrigin()-player:GetHMDAvatar():GetOrigin()))
@@ -79,7 +81,10 @@ function PortalManager:init()
             local min = Vector(portalx / 2, portaly / 2, portalz / 2)
             local max = Vector(-(portalx / 2), -(portaly / 2), -(portalz / 2))
             local portableEnt = Entities:FindAllInSphere(org, detectRadius)
-            DebugDrawLine(org, org + (dir * 10), 255, 0, 0, true, 1)
+            if Debugging then
+                DebugDrawLine(org, org + (dir * 10), 255, 0, 0, true, 1)
+                DebugDrawSphere(org, Vector(0, 0, 50), 10, detectRadius, true, 0.1)
+            end
             
             for key, value in pairs(portableEnt) do
                 local classname = portableEnt[key]:GetClassname()
@@ -99,7 +104,6 @@ function PortalManager:init()
                     end
                 end
                 -- DebugDrawBoxDirection(org,min,max,dir,Vector(0,0,255),20,0.1)
-                DebugDrawSphere(org, Vector(0, 0, 50), 10, detectRadius, true, 0.1)
             end
         end
     end
@@ -184,7 +188,7 @@ function PortalManager:CreatePortalAt(position, normal, colortype)
     AimatTemplate.origin = position
     AimatTemplate.angles = VectorToAngles(normal)
     local aimat = SpawnEntityFromTableSynchronous("point_aimat", AimatTemplate)
-    DebugDrawLine(aimat:GetOrigin(), aimat:GetOrigin() + normal * 10, 255, 0, 0, true, 1)
+    --DebugDrawLine(aimat:GetOrigin(), aimat:GetOrigin() + normal * 10, 255, 0, 0, true, 1)
     ParticleSystemTemplate.targetname = colortype .. "Portal_particles"
     ParticleSystemTemplate.cpoint5 = colortype .. "Portal"
     ParticleSystemTemplate.origin = position + normal
@@ -208,17 +212,16 @@ function PortalManager:CreatePortalAt(position, normal, colortype)
     LogicScriptTemplate.Group03 = colortype .. "Portal_teleport"
     local logic = SpawnEntityFromTableSynchronous("logic_script", LogicScriptTemplate)
 
-    if particles then
-        print("particles created")
-    end
-
     if colortype == Colors.Blue then
         PortalManager.BluePortalGroup = {aimat, Light, particles, particlesEnt, logic,teleportpoint}
     elseif colortype == Colors.Orange then
         PortalManager.OrangePortalGroup = {aimat, Light, particles, particlesEnt, logic,teleportpoint}
     end
 
-    print("Portal Created")
+    if Debugging then
+        print("Portal Created")
+        
+    end
 
 end
 
@@ -247,13 +250,15 @@ function PortalManager:ClosePortal(colortype)
 end
 
 currentPortal = Colors.Blue
+pressedUse = false
 
 function PlayerShoot()
     player = player or Entities:GetLocalPlayer()
-    if not player:GetHMDAvatar() then
+    if player:GetHMDAvatar() then
         return
     end
-    if player:IsUsePressed() then
+    if player:IsUsePressed() and not pressedUse then
+        pressedUse = true
         local traceTable = {
             startpos = player:EyePosition(),
             endpos = player:EyePosition() + player:GetForwardVector() * 1000,
@@ -261,19 +266,26 @@ function PlayerShoot()
         }
         TraceLine(traceTable)
         if traceTable.hit then
-            DebugDrawLine(traceTable.startpos, traceTable.pos, 0, 255, 0, false, 1)
-            DebugDrawLine(traceTable.pos, traceTable.pos + traceTable.normal * 10, 0, 0, 255, false, 1)
+            if Debugging then
+                DebugDrawLine(traceTable.startpos, traceTable.pos, 0, 255, 0, false, 1)
+                DebugDrawLine(traceTable.pos, traceTable.pos + traceTable.normal * 10, 0, 0, 255, false, 1)
+            end
             if currentPortal == Colors.Blue then
                 currentPortal = Colors.Orange
             else
                 currentPortal = Colors.Blue
             end
-            print("Createing Portal Color:" .. currentPortal)
+            if Debugging then
+                print("Createing Portal Color:" .. currentPortal)
+            end
             PortalManager:CreatePortalAt(traceTable.pos, traceTable.normal, currentPortal)
         else
-            DebugDrawLine(traceTable.startpos, traceTable.endpos, 255, 0, 0, false, 1)
+            if Debugging then
+                DebugDrawLine(traceTable.startpos, traceTable.endpos, 255, 0, 0, false, 1)
+            end
         end
-
+    elseif not player:IsUsePressed() then
+        pressedUse = false
     end
     return 0.1
 end
@@ -282,20 +294,34 @@ function Activate()
     print("Portal Activated")
     thisEntity:SetThink(function()
         return PortalManager:init()
-    end, "flybyUpdater", 0.5)
+    end, "flybyUpdater", 0.1)
     player = player or Entities:GetLocalPlayer()
     
     thisEntity:SetThink(function()
         return PlayerShoot()
-    end, "shootUpdater", 2)
+    end, "shootUpdater", 1)
 
     _G.PortalManager =_G.PortalManager or PortalManager
+    _G.Debugging = _G.Debugging or Debugging
 end
 function Precache(context)
     print("Portal Precache")
     PrecacheResource("particle", "particles/portal_effect_parent.vpcf", context)
 end
-function Spawn()
-    print("Portal Spawn")
-end
 
+function SpawnOrangePortal(args)
+    if Debugging then
+        print("Create Orange Portal")
+        
+    end
+    local caller = args.caller
+    PortalManager:CreatePortalAt(caller:GetOrigin(), caller:GetForwardVector(), Colors.Orange)
+end
+function SpawnBluePortal(args)
+    if Debugging then
+        print("Create Blue Portal")
+        
+    end
+    local caller = args.caller
+    PortalManager:CreatePortalAt(caller:GetOrigin(), caller:GetForwardVector(), Colors.Blue)
+end
