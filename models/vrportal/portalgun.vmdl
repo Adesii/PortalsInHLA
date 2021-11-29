@@ -155,6 +155,6 @@
 		]
 		model_archetype = "animated_model"
 		primary_associated_entity = "npc_furniture"
-		anim_graph_name = "animgraphs/portalgun.vanmgrph"
+		anim_graph_name = "animgraphs/vrportal/portalgun.vanmgrph"
 	}
 }
