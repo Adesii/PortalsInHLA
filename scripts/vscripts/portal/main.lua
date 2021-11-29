@@ -131,9 +131,7 @@ function PortalManager:init()
                 for key, value in pairs(PortalWhitelist) do
                     if classname == value then
                         if PortalManager:CanTeleport(portableEnt[key], loopColor) then
-                            if Debugging then
-                                print("Teleporting " .. portableEnt[key]:GetClassname())
-                            end
+                            print("Teleporting " .. portableEnt[key]:GetClassname())
                             PortalManager:teleport(portableEnt[key], loopColor)
                         end
                     end
