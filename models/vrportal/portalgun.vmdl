@@ -15,7 +15,7 @@
 						[
 							{
 								from = "models/weapons/w_models/portalgun/w_portalgun.vmat"
-								to = "materials/models/weapons/w_models/portalgun/w_portalgun.vmat"
+								to = "materials/vrportal/portalgun/portalgunmaterial.vmat"
 							},
 							{
 								from = "glass.vmat"

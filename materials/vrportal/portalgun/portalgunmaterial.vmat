@@ -4,9 +4,6 @@ Layer0
 {
 	shader "vr_complex.vfx"
 
-	//---- Translucent ----
-	F_TRANSLUCENT 1
-
 	//---- Ambient Occlusion ----
 	g_flAmbientOcclusionDirectDiffuse "0.000"
 	g_flAmbientOcclusionDirectSpecular "0.000"
@@ -34,7 +31,7 @@ Layer0
 	TextureNormal "materials/vrportal/portalgun/w_portalgun_normal.tga"
 
 	//---- Roughness ----
-	TextureRoughness "[0.501961 0.501961 0.501961 0.000000]"
+	TextureRoughness "materials/vrportal/portalgun/w_portalgun_rough.tga"
 
 	//---- Texture Coordinates ----
 	g_nScaleTexCoordUByModelScaleAxis "0"
@@ -42,8 +39,4 @@ Layer0
 	g_vTexCoordOffset "[0.000 0.000]"
 	g_vTexCoordScale "[1.000 1.000]"
 	g_vTexCoordScrollSpeed "[0.000 0.000]"
-
-	//---- Translucent ----
-	g_flOpacityScale "1.000"
-	TextureTranslucency "[0.551000 0.551000 0.551000 0.000000]"
 }
