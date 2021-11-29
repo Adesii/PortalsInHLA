@@ -42,6 +42,31 @@ PortalManager = _G.PortalManager or {
     BluePortalGroup = {},
     OrangePortalGroup = {}
 }
+
+PortalWhitelist= {
+    "prop_physics",
+    "func_physbox",
+    "npc_manhack",
+    "item_hlvr_grenade_frag",
+    "item_hlvr_grenade_xen",
+    "item_hlvr_prop_battery",
+    "prop_physics_interactive",
+    "prop_physics_override",
+    "prop_ragdoll",
+    "generic_actor",
+    "hlvr_weapon_energygun",
+    "item_healthvial",
+    "item_item_crate",
+    "item_hlvr_crafting_currency_large",
+    "item_hlvr_crafting_currency_small",
+    "item_hlvr_clip_energygun",
+    "item_hlvr_clip_energygun_multiple",
+    "item_hlvr_clip_rapidfire",
+    "item_hlvr_clip_shotgun_single",
+    "item_hlvr_clip_shotgun_multiple",
+    "item_hlvr_clip_generic_pistol",
+    "item_hlvr_clip_generic_pistol_multiple",
+}
 local laspplayerteleport = 0
 
 function PortalManager:init()
@@ -75,6 +100,13 @@ function PortalManager:init()
                     player:GetHMDAnchor():SetAbsOrigin((PortalManager.BluePortalGroup[1]:GetAbsOrigin()+PortalManager.BluePortalGroup[1]:GetForwardVector()*30)+(player:GetHMDAnchor():GetOrigin()-player:GetHMDAvatar():GetOrigin()))
                 end
                 laspplayerteleport = GetFrameCount() + 100
+            elseif laspplayerteleport- GetFrameCount() < 0 and PortalManager:CanTeleport(player, loopColor) and player:GetHMDAvatar() == nil then
+                if loopColor == Colors.Blue then
+                    player:SetAbsOrigin((PortalManager.OrangePortalGroup[1]:GetAbsOrigin()+PortalManager.OrangePortalGroup[1]:GetForwardVector()*30))
+                else
+                    player:SetAbsOrigin((PortalManager.BluePortalGroup[1]:GetAbsOrigin()+PortalManager.BluePortalGroup[1]:GetForwardVector()*30))
+                end
+                laspplayerteleport = GetFrameCount() + 100
             end
             local dir = ent:GetForwardVector()
             local org = ent:GetOrigin()
@@ -95,15 +127,17 @@ function PortalManager:init()
                         return tickrate
                     end
                 end
-                
-                if classname ~= "info_particle_system" and classname ~=
-                    "prop_static" and classname ~= "light_omni" and classname ~= "prop_handpose" and classname ~= "player_backpack" then
-                    if PortalManager:CanTeleport(portableEnt[key], loopColor) then
-                        print("Teleporting " .. portableEnt[key]:GetClassname())
-                        PortalManager:teleport(portableEnt[key], loopColor)
+
+                for key, value in pairs(PortalWhitelist) do
+                    if classname == value then
+                        if PortalManager:CanTeleport(portableEnt[key], loopColor) then
+                            if Debugging then
+                                print("Teleporting " .. portableEnt[key]:GetClassname())
+                            end
+                            PortalManager:teleport(portableEnt[key], loopColor)
+                        end
                     end
                 end
-                -- DebugDrawBoxDirection(org,min,max,dir,Vector(0,0,255),20,0.1)
             end
         end
     end
@@ -161,7 +195,7 @@ function PortalManager:teleport(portableEnt, colorportal)
     newVel = newVel - (dir * 20 * (portableEnt:GetVelocity():Length() / 90))
     portableEnt:SetVelocity(newVel)
 
-    print("teleport")
+    --print("teleport")
 end
 
 function PortalManager:getPortal(colorportal)
