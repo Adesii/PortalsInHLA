@@ -29,5 +29,5 @@ omnisharp.json
 *.blend1
 *.blend2
 *.blend4
-scripts/vscripts/.vscode/settings.json
-scripts/vscripts/maskfinder/main.lua
+/scripts/vscripts/.vscode
+/scripts/vscripts/maskfinder
