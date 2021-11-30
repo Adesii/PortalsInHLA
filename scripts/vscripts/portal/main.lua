@@ -88,7 +88,7 @@ function PortalManager:init()
             ent = PortalManager:GetPortalGroup(loopColor)[1]
         end
 
-        
+
 
 
         -- print(ent)
@@ -112,28 +112,26 @@ function PortalManager:init()
             local org = ent:GetOrigin()
             local min = Vector(portalx / 2, portaly / 2, portalz / 2)
             local max = Vector(-(portalx / 2), -(portaly / 2), -(portalz / 2))
-            local portableEnt = Entities:FindAllInSphere(org, detectRadius)
+            local portableEnts = Entities:FindAllInSphere(org, detectRadius)
             if Debugging then
                 DebugDrawLine(org, org + (dir * 10), 255, 0, 0, true, 1)
                 DebugDrawSphere(org, Vector(0, 0, 50), 10, detectRadius, true, 0.1)
             end
-            
-            for key, value in pairs(portableEnt) do
-                local classname = portableEnt[key]:GetClassname()
-                    
-                if portableEnt[key]:GetOwner() then
-                    local ownerentity = portableEnt[key]:GetOwner():GetClassname()
+
+            for _, portableEnt in pairs(portableEnts) do
+                local classname = portableEnt:GetClassname()
+
+                if portableEnt:GetOwner() then
+                    local ownerentity = portableEnt:GetOwner():GetClassname()
                     if ownerentity == "player" or ownerentity == "hl_prop_vr_hand" or ownerentity == "prop_hmd_avatar" or ownerentity == "hl_vr_teleport_controller" then
                         return tickrate
                     end
                 end
 
-                for key, value in pairs(PortalWhitelist) do
-                    if classname == value then
-                        if PortalManager:CanTeleport(portableEnt[key], loopColor) then
-                            print("Teleporting " .. portableEnt[key]:GetClassname())
-                            PortalManager:teleport(portableEnt[key], loopColor)
-                        end
+                if vlua.find(PortalWhitelist, classname) then
+                    if PortalManager:CanTeleport(portableEnt, loopColor) then
+                        print("Teleporting " .. portableEnt:GetClassname())
+                        PortalManager:teleport(portableEnt, loopColor)
                     end
                 end
             end
