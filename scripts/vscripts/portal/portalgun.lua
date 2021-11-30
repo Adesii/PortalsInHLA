@@ -95,7 +95,7 @@ function PortalGun:shoot()
         local gunforward = thisEntity:GetAttachmentForward(PortalGun.MuzzleIndex)
         local traceTable = {
             startpos = gunmuzzle,
-            endpos = gunmuzzle + gunforward * 1000,
+            endpos = gunmuzzle + gunforward * 10000,
             ignore = player
         }
         TraceLine(traceTable)
@@ -126,7 +126,7 @@ function PortalGun:shoot()
         local gunforward = thisEntity:GetAttachmentForward(PortalGun.MuzzleIndex)
         local traceTable = {
             startpos = gunmuzzle,
-            endpos = gunmuzzle + gunforward * 1000,
+            endpos = gunmuzzle + gunforward * 10000,
             ignore = player
         }
         TraceLine(traceTable)
