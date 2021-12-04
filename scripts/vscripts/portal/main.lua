@@ -1,7 +1,10 @@
-local portalx = 35
-local portaly = 75
-local portalz = 20
+local portalx = 25
+local portaly = 50
+local portalz = 100
 local detectRadius = portaly
+
+local mins = Vector(-(portalx / 2), -(portaly / 2), -(portalz / 2))
+local maxs = Vector(portalx / 2, portaly / 2, portalz / 2)
 
 Debugging = _G.Debugging or false
 
@@ -99,23 +102,21 @@ function PortalManager:init()
                 else
                     player:GetHMDAnchor():SetAbsOrigin((PortalManager.BluePortalGroup[1]:GetAbsOrigin()+PortalManager.BluePortalGroup[1]:GetForwardVector()*30)+(player:GetHMDAnchor():GetOrigin()-player:GetHMDAvatar():GetOrigin()))
                 end
-                laspplayerteleport = GetFrameCount() + 100
+                laspplayerteleport = GetFrameCount() + 10
             elseif laspplayerteleport- GetFrameCount() < 0 and PortalManager:CanTeleport(player, loopColor) and player:GetHMDAvatar() == nil then
-                if loopColor == Colors.Blue then
-                    player:SetAbsOrigin((PortalManager.OrangePortalGroup[1]:GetAbsOrigin()+PortalManager.OrangePortalGroup[1]:GetForwardVector()*30))
-                else
-                    player:SetAbsOrigin((PortalManager.BluePortalGroup[1]:GetAbsOrigin()+PortalManager.BluePortalGroup[1]:GetForwardVector()*30))
-                end
-                laspplayerteleport = GetFrameCount() + 100
+                player:SetOrigin(player:GetOrigin()+Vector(0,0,10))
+                PortalManager:teleport(player, loopColor)
+                laspplayerteleport = GetFrameCount() + 10
             end
             local dir = ent:GetForwardVector()
             local org = ent:GetOrigin()
-            local min = Vector(portalx / 2, portaly / 2, portalz / 2)
-            local max = Vector(-(portalx / 2), -(portaly / 2), -(portalz / 2))
+            
             local portableEnts = Entities:FindAllInSphere(org, detectRadius)
             if Debugging then
                 DebugDrawLine(org, org + (dir * 10), 255, 0, 0, true, 1)
                 DebugDrawSphere(org, Vector(0, 0, 50), 10, detectRadius, true, 0.1)
+
+                DebugDrawBoxDirection(org, mins, maxs,dir , Vector(255,0,0), 20, tickrate)
             end
 
             for _, portableEnt in pairs(portableEnts) do
@@ -141,7 +142,7 @@ function PortalManager:init()
     return tickrate
 
 end
-
+--
 function PortalManager:CanTeleport(ent, LoopColor)
     local org = PortalManager:GetConnectedPortal(LoopColor)
     if not org then
@@ -152,13 +153,31 @@ function PortalManager:CanTeleport(ent, LoopColor)
         return false
     end
 
-    local v = org:TransformPointWorldToEntity(ent:GetOrigin())
+    local pos = PortalManager:getPosOnBounty(ent,org)
+    local entMins = pos+ent:GetBoundingMins()
+    local entMaxs = pos+ent:GetBoundingMaxs()
 
-    if v.y < portalx and v.x < portalz and v.z < portaly then
-        return true
-    else
-        return false
+    --print(entMins)
+    --print(entMaxs)
+    --print("Portal:")
+    --print(mins)
+    --print(maxs)
+    --print(LoopColor)
+    --print("_____________")
+
+    --calculate if v is inside mins and maxs
+
+    return BBoxIntersect( entMins, entMaxs,mins,maxs )
+end
+
+function BBoxIntersect(mins1, maxs1, mins2, maxs2)
+    local intersect = true
+    for i = 1, 3, 1 do
+        if mins1[i] > maxs2[i] or maxs1[i] < mins2[i] then
+            intersect = false
+        end
     end
+    return intersect
 end
 
 function PortalManager:getPosOnBounty(ent, port)
@@ -180,16 +199,27 @@ function PortalManager:teleport(portableEnt, colorportal)
     local LocalPositionOnOriginalPortal = PortalManager:getPosOnBounty(portableEnt, OriginalPortal)
     local dir = Portal:GetForwardVector()
     -- Teleport from OriginalPortal to Portal but keep velocity and rotation of the entity with offset to keep it from constantly teleporting back and forth
-    local newPos = Portal:GetOrigin() + (dir * 20 * (portableEnt:GetVelocity():Length() / 90)) +
+    --+ (dir * 20 * (portableEnt:GetVelocity():Length() / 90))
+    local newPos = Portal:GetOrigin()  +
                        (dir * LocalPositionOnOriginalPortal.x) + (dir * LocalPositionOnOriginalPortal.y) +
                        (dir * LocalPositionOnOriginalPortal.z)
-    portableEnt:SetOrigin(newPos)
+    portableEnt:SetOrigin(Portal:TransformPointEntityToWorld(LocalPositionOnOriginalPortal+Vector(maxs.x,0,0)))
 
     -- Rotate Velocity to match the new direction
-    local vel = portableEnt:GetVelocity()
-    local newVel = dir * vel:Length()
-    newVel = newVel - (dir * 20 * (portableEnt:GetVelocity():Length() / 90))
-    portableEnt:SetVelocity(newVel)
+    local vel = GetPhysVelocity(portableEnt)
+    local newVel = dir * vel:Length() * 0.95
+    --local newAngles = VectorToAngles(Portal:TransformPointEntityToWorld(portableEnt:GetAnglesAsVector()))
+    --portableEnt:SetAngles(-newAngles.x,-newAngles.y,-newAngles.z)
+    portableEnt:ApplyAbsVelocityImpulse((-vel)+newVel-dir)
+    if Debugging then
+        DebugDrawLine(OriginalPortal:GetOrigin(), OriginalPortal:GetOrigin() + vel, 255, 0, 0, true, 10)
+        DebugDrawLine(Portal:GetOrigin(), Portal:GetOrigin() + newVel, 0, 255, 0, true, 10)
+        print(vel)
+        print(newVel)
+        print("___________")
+    end
+    --local newVel = dir * vel:Length()
+    --newVel = newVel - (dir * 20 * (portableEnt:GetVelocity():Length() / 90))
 
     --print("teleport")
 end
@@ -221,6 +251,7 @@ function PortalManager:CreatePortalAt(position, normal, colortype)
     AimatTemplate.origin = position
     AimatTemplate.angles = VectorToAngles(normal)
     local aimat = SpawnEntityFromTableSynchronous("point_aimat", AimatTemplate)
+    aimat:SetForwardVector(normal)
     --DebugDrawLine(aimat:GetOrigin(), aimat:GetOrigin() + normal * 10, 255, 0, 0, true, 1)
     ParticleSystemTemplate.targetname = colortype .. "Portal_particles"
     ParticleSystemTemplate.cpoint5 = colortype .. "Portal"
