@@ -10,6 +10,7 @@ PortalGun = _G.PortalGun or {
     OrangePortalButton = 9,
     PickupTrigger = 1,
     CanFire = true,
+    SupendFire = false,
 
     MuzzleAttachment = "firebarrel",
 
@@ -80,9 +81,9 @@ end
 function PortalGun:shoot()
     
     if not player:GetHMDAvatar() then
-        return
+        return 0.5
     end
-    if PortalGun.CanFire == false then
+    if PortalGun.CanFire == false or PortalGun.SupendFire == true then
         return 0.1
     end
     if PortalGun.Player:IsDigitalActionOnForHand(0,PortalGun.BluePortalButton) then
@@ -150,6 +151,14 @@ function PortalGun:shoot()
     end
     return 0.1
 end
+
+function ActivatePortalGun()
+    PortalGun.SupendFire = false
+end
+function DeactivatePortalGun()
+    PortalGun.SupendFire = true
+end
+
 
 
 function AnimGraphListener(name,status)
