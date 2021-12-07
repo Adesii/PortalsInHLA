@@ -34,12 +34,32 @@ local LogicScriptTemplate = {
     Group01 = "bluePortal_light_omni",
     Group02 = "bluePortal_particles"
 }
+local ViewPortalTemplate = {
+    targetname = "Portal_view",
+    model = "models/vrportal/portalshape.vmdl",
+    skin = "default"
+}
+local PointCameraTemplate = {
+    targetname = "Portal_camera",
+    ZNear = "4",
+    ZFar = "10000",
+    FOV = "90",
+    UseScreenAspectRatio = "1"
+}
+local FuncMonitorTemplate = {
+    targetname = "FuncMonitor",
+    target = "Portal_camera",
+    resolution = "3",
+    unique_target = "1",
+    render_shadows = "1"
+}
 Colors = _G.Colors or {
     Blue = "blue",
     Orange = "orange"
 }
 
 PortalManager = _G.PortalManager or {
+    PortableFunc = false,
 
     ColorEnts = {},
     BluePortalGroup = {},
@@ -262,6 +282,11 @@ function PortalManager:CreatePortalAt(position, normal, colortype)
         player)
     ParticleManager:SetParticleControl(particles, 5, PortalManager.ColorEnts[colortype]:GetOrigin())
 
+    ViewPortalTemplate.angles = RotateOrientation(VectorToAngles(normal), QAngle(90, 0, 0))
+    ViewPortalTemplate.skin = colortype
+    local ViewPortal = SpawnEntityFromTableSynchronous("prop_dynamic", ViewPortalTemplate)
+    ViewPortal:SetOrigin(position+normal)
+
     local teleportpoint = SpawnEntityFromTableSynchronous("point_teleport",{
         targetname = colortype .. "Portal_teleport",
         origin = aimat:GetOrigin() + normal * 50,
@@ -277,17 +302,76 @@ function PortalManager:CreatePortalAt(position, normal, colortype)
     local logic = SpawnEntityFromTableSynchronous("logic_script", LogicScriptTemplate)
 
     if colortype == Colors.Blue then
-        PortalManager.BluePortalGroup = {aimat, Light, particles, particlesEnt, logic,teleportpoint}
+        PortalManager.BluePortalGroup = {aimat, Light, particles, particlesEnt, logic,teleportpoint,ViewPortal}
     elseif colortype == Colors.Orange then
-        PortalManager.OrangePortalGroup = {aimat, Light, particles, particlesEnt, logic,teleportpoint}
+        PortalManager.OrangePortalGroup = {aimat, Light, particles, particlesEnt, logic,teleportpoint,ViewPortal}
     end
 
-    if Debugging then
-        print("Portal Created")
-        
+    if PortalManager.BluePortalGroup[1] and PortalManager.OrangePortalGroup[1] then
+        PortalManager:CreateViewLink()
+    else
+        PortalManager:CloseViewLink()
     end
 
 end
+
+
+function PortalManager:CreateViewLink()
+
+    local BlueCamera = Entities:FindByName(nil,"@"..Colors.Blue .. "PointCamera")
+    local OrangeCamera = Entities:FindByName(nil,"@"..Colors.Orange .. "PointCamera")
+    local BluePortal = Entities:FindByName(nil,"@"..Colors.Blue .. "FuncMonitor")
+    local OrangePortal = Entities:FindByName(nil,"@"..Colors.Orange .. "FuncMonitor")
+
+    BluePortal:SetOrigin(PortalManager.BluePortalGroup[1]:GetOrigin()+ PortalManager.BluePortalGroup[1]:GetForwardVector()*2)
+    OrangePortal:SetOrigin(PortalManager.OrangePortalGroup[1]:GetOrigin()+ PortalManager.OrangePortalGroup[1]:GetForwardVector()*2)
+    
+    local angles = VectorToAngles(-PortalManager.BluePortalGroup[1]:GetForwardVector())
+    BluePortal:SetAngles(angles.x,angles.y,angles.z)
+
+    angles = VectorToAngles(-PortalManager.OrangePortalGroup[1]:GetForwardVector())
+    OrangePortal:SetAngles(angles.x,angles.y,angles.z)
+
+
+
+
+    BlueCamera:SetOrigin(PortalManager.BluePortalGroup[1]:GetOrigin() + PortalManager.BluePortalGroup[1]:GetForwardVector() * -40)
+    OrangeCamera:SetOrigin(PortalManager.OrangePortalGroup[1]:GetOrigin()+ PortalManager.OrangePortalGroup[1]:GetForwardVector() * -40)
+    
+
+    
+    
+    angles = VectorToAngles(PortalManager.BluePortalGroup[1]:GetForwardVector())
+    BlueCamera:SetAngles(angles.x,angles.y,angles.z)
+
+    angles = VectorToAngles(PortalManager.OrangePortalGroup[1]:GetForwardVector())
+    OrangeCamera:SetAngles(angles.x,angles.y,angles.z)
+
+    
+    EntFire(BlueCamera,"@"..Colors.Blue .. "FuncMonitor","Enable")
+    EntFire(OrangeCamera,"@"..Colors.Orange .. "FuncMonitor","Enable")
+
+    --EntFireByHandle(thisEntity,PortalManager.OrangePortalGroup[7],"Disable")
+    --EntFireByHandle(thisEntity,PortalManager.BluePortalGroup[7],"Disable")
+    
+    
+end
+function PortalManager:CloseViewLink()
+    local BlueCamera = Entities:FindByName(nil,"@"..Colors.Blue .. "PointCamera")
+    local OrangeCamera = Entities:FindByName(nil,"@"..Colors.Orange .. "PointCamera")
+    local BluePortal = Entities:FindByName(nil,"@"..Colors.Blue .. "FuncMonitor")
+    local OrangePortal = Entities:FindByName(nil,"@"..Colors.Orange .. "FuncMonitor")
+    BluePortal:SetOrigin(Vector(0,0,0))
+    BluePortal:SetAngles(-90,0,0)
+    OrangePortal:SetOrigin(Vector(0,0,0))
+    OrangePortal:SetAngles(-90,0,0)
+    EntFire(BlueCamera,"@"..Colors.Blue .. "FuncMonitor","Disable")
+    EntFire(OrangeCamera,"@"..Colors.Orange .. "FuncMonitor","Disable")
+    --EntFireByHandle(thisEntity,PortalManager.OrangePortalGroup[7],"Enable")
+    --EntFireByHandle(thisEntity,PortalManager.BluePortalGroup[7],"Enable")
+end
+
+
 
 function PortalManager:ClosePortal(colortype)
     if colortype ~= Colors.Blue and colortype ~= Colors.Orange then
@@ -312,6 +396,7 @@ function PortalManager:ClosePortal(colortype)
             PortalManager.OrangePortalGroup[key] = nil
         end
     end
+    PortalManager:CloseViewLink()
 end
 
 currentPortal = Colors.Blue
@@ -332,9 +417,16 @@ function PlayerShoot()
 
         TraceLine(traceTable)
         if traceTable.hit then
-            if traceTable.enthit:GetClassname() == "func_brush" then
-                return tickrate
+            if PortalManager.PortableFunc then
+                if  traceTable.enthit:GetClassname() ~= "func_brush" then
+                    return tickrate
+                end
+            else
+                if  traceTable.enthit:GetClassname() == "func_brush" then
+                    return tickrate
+                end
             end
+            
         
             if Debugging then
                 DebugDrawLine(traceTable.startpos, traceTable.pos, 0, 255, 0, false, 1)
@@ -377,6 +469,7 @@ end
 function Precache(context)
     print("Portal Precache")
     PrecacheResource("particle", "particles/portal_effect_parent.vpcf", context)
+    PrecacheResource("model", "models/vrportal/portalshape.vmdl", context)
 end
 
 function SpawnOrangePortal(args)
@@ -394,6 +487,14 @@ function SpawnBluePortal(args)
     end
     local caller = args.caller
     PortalManager:CreatePortalAt(caller:GetOrigin(), caller:GetForwardVector(), Colors.Blue)
+end
+
+function SetFuncMode(args)
+    if Debugging then
+        print("Set Func Mode")
+        
+    end
+    PortalManager.PortableFunc =  true
 end
 
 function CloseAllPortals(args)

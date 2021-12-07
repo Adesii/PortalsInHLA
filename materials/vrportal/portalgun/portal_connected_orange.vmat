@@ -1,0 +1,45 @@
+// THIS FILE IS AUTO-GENERATED
+
+Layer0
+{
+	shader "vr_monitor.vfx"
+
+	//---- Chromatic Abberation ----
+	g_flBlueShift "0.100"
+	g_flGreenShift "0.100"
+	g_flJitterSpeed "8.220"
+	g_flRedShift "0.100"
+	TextureJitterControl "materials/workshop_examples/monitor/jitter_control.tga"
+
+	//---- Contrast ----
+	TextureContrastControl "materials/default/default.tga"
+
+	//---- Display ----
+	g_flFilmGrainStrength "0.500"
+	g_flTexCoordOffsetU "0.000"
+	g_flTexCoordOffsetV "0.000"
+	g_flTintScale "1.000"
+	g_vColorTint "[0.988235 0.862745 0.572549 1.000000]"
+	g_vScanlineTextureOffset "[0.000 0.000]"
+	g_vTexCoordScale "[1.000 1.000]"
+	ScanlineDistortion "materials/default/default_color.tga"
+	TextureColor "materials/default/default_color.tga"
+	TextureFilmGrain "materials/default/default.tga"
+	TextureScanlines "materials/workshop_examples/monitor/scanline_03.png"
+	TextureVignette "[1.000000 1.000000 1.000000 0.000000]"
+
+	//---- Specular ----
+	g_flReflectionStrength "10.000"
+	g_fSpecularRoughness "0.350"
+	SpecularDirt "materials/default/default_normal.tga"
+	SpecularDistortion "materials/default/default_normal.tga"
+
+	//---- VSYNC ----
+	g_flVSYNCJumpScale "0.000"
+	VSyncControl "materials/default/default.tga"
+
+	DynamicParams
+	{
+		TextureColor "col"
+	}
+}
