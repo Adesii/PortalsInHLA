@@ -101,6 +101,7 @@ function PortalGun:shoot()
         }
         TraceLine(traceTable)
         if traceTable.hit then
+            EntFireByHandle(thisEntity,traceTable.enthit,"FireUser1")
             if PortalManager.PortableFunc then
                 if  traceTable.enthit:GetClassname() ~= "func_brush" then
                     return tickrate
@@ -138,8 +139,15 @@ function PortalGun:shoot()
         }
         TraceLine(traceTable)
         if traceTable.hit then
-            if traceTable.enthit:GetClassname() == "func_brush" then
-                return tickrate
+            EntFireByHandle(thisEntity,traceTable.enthit,"FireUser1")
+            if PortalManager.PortableFunc then
+                if  traceTable.enthit:GetClassname() ~= "func_brush" then
+                    return tickrate
+                end
+            else
+                if  traceTable.enthit:GetClassname() == "func_brush" then
+                    return tickrate
+                end
             end
             if Debugging then
                 DebugDrawLine(traceTable.startpos, traceTable.pos, 0, 255, 0, false, 1)

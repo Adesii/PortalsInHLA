@@ -472,6 +472,8 @@ function PlayerShoot()
 
         TraceLine(traceTable)
         if traceTable.hit then
+
+            EntFireByHandle(thisEntity,traceTable.enthit,"FireUser1")
             if PortalManager.PortableFunc then
                 if  traceTable.enthit:GetClassname() ~= "func_brush" then
                     return tickrate
