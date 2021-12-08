@@ -6,7 +6,7 @@ local detectRadius = portaly
 local mins = Vector(-(portalx / 2), -(portaly / 2), -(portalz / 2))
 local maxs = Vector(portalx / 2, portaly / 2, portalz / 2)
 
-Debugging = _G.Debugging or true
+Debugging = _G.Debugging or false
 
 
 tickrate = _G.tickrate or 0.05
