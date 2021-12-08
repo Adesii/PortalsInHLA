@@ -371,7 +371,9 @@ function PortalManager:UpdateView()
     local Player = player
 
     local PlayerToBlue = OrangePortal:TransformPointWorldToEntity(player:EyePosition())
+    local PlayerToBlueOrg = BluePortal:TransformPointEntityToWorld(-PlayerToBlue)
     local PlayerToOrange = BluePortal:TransformPointWorldToEntity(player:EyePosition())
+    local PlayerToOrangeOrg = OrangePortal:TransformPointEntityToWorld(-PlayerToOrange)
     PlayerToOrange.z = PlayerToOrange.z * -1
     PlayerToBlue.z = PlayerToBlue.z * -1
     PlayerToBlue.x = Clamp(PlayerToBlue.x, 0, 40)
@@ -395,14 +397,23 @@ function PortalManager:UpdateView()
     angles = VectorToAngles(BluePortal:TransformPointEntityToWorld(PlayerToBlue) - BluePortal:GetOrigin())
     BlueCamera:SetAngles(angles.x,angles.y,angles.z)
 
-    local BlueCamFOV = Clamp(abs(AngleDiff(angles.y,OrangePortal:GetLocalAngles().y)),10,180)
-    local OrangeCamFOV = Clamp(abs(AngleDiff(angles.y,BluePortal:GetLocalAngles().y)),10,180)
+    --the smaller x of PlayerToOrangeOrg is the higher the FOV is
+    --1 meter is 100 units
+    --local OrangeFOV = 300/abs(PlayerToOrangeOrg.x)
+    --local BlueFOV =  300/abs(PlayerToBlueOrg.x)
+    ----print(abs(PlayerToOrangeOrg.x))
+    ----print(tostring(OrangeFOV))
+    ----print(tostring(BlueFOV))
+    --OrangeFOV = Lerp(Clamp(OrangeFOV-0.5,0,1),50, 90)
+    --BlueFOV = Lerp(Clamp(BlueFOV-0.5,0,1), 50, 90)
+--
+    --local BlueCamFOV = Clamp(abs((1/PlayerToOrangeOrg:Length())*-0.1),10,180)
+    --local OrangeCamFOV = Clamp(abs((1/PlayerToBlueOrg:Length())*-0.1),10,180)
+--
+    --EntFireByHandle(nil,BlueCamera,"ChangeFOV",tostring(BlueFOV))
+    --EntFireByHandle(nil,OrangeCamera,"ChangeFOV",tostring(OrangeFOV))
 
-    --EntFireByHandle(nil,BlueCamera,"ChangeFOV",tostring(BlueCamFOV))
-    --EntFireByHandle(nil,OrangeCamera,"ChangeFOV",tostring(OrangeCamFOV))
-
-    --print(OrangeCamPos:Length())
-    --print(tostring(15000/OrangeCamPos:Length()))
+   
 --
     --print("_______")
 
@@ -472,8 +483,11 @@ function PlayerShoot()
 
         TraceLine(traceTable)
         if traceTable.hit then
-
-            EntFireByHandle(thisEntity,traceTable.enthit,"FireUser1")
+            if currentPortal == Color.Blue then
+                EntFireByHandle(thisEntity,traceTable.enthit,"FireUser1","0")
+            else
+                EntFireByHandle(thisEntity,traceTable.enthit,"FireUser1","1")
+            end
             if PortalManager.PortableFunc then
                 if  traceTable.enthit:GetClassname() ~= "func_brush" then
                     return tickrate
