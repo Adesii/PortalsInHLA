@@ -1,5 +1,7 @@
 # PortalsInHLA
-Portals in HLA using VScript
+Portals in HLA using VScript. **THIS IS NOT A STANDALONE MOD**, it needs to be integrated into workshop maps, and does not work with the Campaign or out of the box.
+
+Placing the PortalManager Prefab into your own workshop map will allow portals to exist either through the PortalSpawner prefabs or through the seperate PortalGun Prefab which will automatically attach to the players right hand on map spawn
 
 
 ## Important Information:
