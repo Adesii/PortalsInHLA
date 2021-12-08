@@ -6,7 +6,7 @@ local detectRadius = portaly
 local mins = Vector(-(portalx / 2), -(portaly / 2), -(portalz / 2))
 local maxs = Vector(portalx / 2, portaly / 2, portalz / 2)
 
-Debugging = _G.Debugging or false
+Debugging = _G.Debugging or true
 
 
 tickrate = _G.tickrate or 0.05
@@ -483,10 +483,10 @@ function PlayerShoot()
 
         TraceLine(traceTable)
         if traceTable.hit then
-            if currentPortal == Color.Blue then
-                EntFireByHandle(thisEntity,traceTable.enthit,"FireUser1","0")
+            if currentPortal == Colors.Blue then
+                EntFireByHandle(thisEntity,traceTable.enthit,"FireUser1")
             else
-                EntFireByHandle(thisEntity,traceTable.enthit,"FireUser1","1")
+                EntFireByHandle(thisEntity,traceTable.enthit,"FireUser2")
             end
             if PortalManager.PortableFunc then
                 if  traceTable.enthit:GetClassname() ~= "func_brush" then
