@@ -1,12 +1,12 @@
 local portalx = 25
-local portaly = 50
+local portaly = 55
 local portalz = 100
 local detectRadius = portaly
 
 local mins = Vector(-(portalx / 2), -(portaly / 2), -(portalz / 2))
 local maxs = Vector(portalx / 2, portaly / 2, portalz / 2)
 
-Debugging = _G.Debugging or false
+Debugging = _G.Debugging or true
 
 
 tickrate = _G.tickrate or 0.05
@@ -137,7 +137,7 @@ function PortalManager:init()
             local portableEnts = Entities:FindAllInSphere(org, detectRadius)
             if Debugging then
                 DebugDrawLine(org, org + (dir * 10), 255, 0, 0, true, 1)
-                DebugDrawSphere(org, Vector(0, 0, 50), 10, detectRadius, true, 0.1)
+                --DebugDrawSphere(org, Vector(0, 0, 50), 10, detectRadius, true, 0.1)
 
                 DebugDrawBoxDirection(org, mins, maxs,dir , Vector(255,0,0), 20, tickrate)
             end
@@ -258,6 +258,79 @@ function PortalManager:GetPortalGroup(colorportal)
         return PortalManager.OrangePortalGroup
     end
 end
+
+
+function PortalManager:TryToCreatePortalAt(position, normal, colortype)
+    local angles = VectorToAngles(normal)
+    --print(position)
+    --print(angles:Up()*portalz)
+    local UpTrace = TraceDirection(position+angles:Forward()*10,angles:Up()*portalz/2)
+    if not UpTrace.hit then
+        UpTrace = TraceDirection(UpTrace.endpos,-angles:Forward()*30)
+        if not UpTrace.hit then
+            return false
+        end
+    else
+        return false
+    end
+    local DownTrace = TraceDirection(position+angles:Forward()*10,(-angles:Up())*portalz/2)
+    if not DownTrace.hit then
+        
+        DownTrace = TraceDirection(DownTrace.endpos,-angles:Forward()*30)
+        if not DownTrace.hit then
+            return false
+        end
+    else
+        return false
+    end
+    local LeftTrace = TraceDirection(position+angles:Forward()*10,angles:Left()*portaly/2)
+    if not LeftTrace.hit then
+        LeftTrace = TraceDirection(LeftTrace.endpos,-angles:Forward()*30)
+        --print(LeftTrace)
+        if not LeftTrace.hit then
+            return false
+        end
+    else
+        return false
+    end
+    local RightTrace = TraceDirection(position+angles:Forward()*10,(-angles:Left())*portaly/2)
+    if not RightTrace.hit then
+        RightTrace = TraceDirection(RightTrace.endpos,-angles:Forward()*30)
+        if not RightTrace.hit then
+            return false
+        end
+    else
+        return false
+    end
+    local otherPortal = PortalManager:GetConnectedPortal(colortype)
+    if otherPortal ~= nil then
+        local localPosition = otherPortal:TransformPointWorldToEntity(position)
+        --print(localPosition)
+        if abs(localPosition.y) < portaly  and abs(localPosition.z) < portalz and abs(localPosition.x) < 20 then
+            return false
+        end
+    end
+
+    PortalManager:CreatePortalAt(position,normal,colortype)
+   
+end
+function TraceDirection(position,dir)
+    local TraceTable = {
+        startpos = position,
+        endpos = position + dir,
+        ignore = player,
+    }
+    TraceLine(TraceTable)
+    if Debugging then
+        if TraceTable.hit then
+            DebugDrawLine(TraceTable.startpos,TraceTable.endpos,255,0,0,true,3)
+        else
+            DebugDrawLine(TraceTable.startpos,TraceTable.endpos,0,255,0,true,3)
+        end
+    end
+    return TraceTable
+end
+
 
 function PortalManager:CreatePortalAt(position, normal, colortype)
     if colortype ~= Colors.Blue and colortype ~= Colors.Orange then
@@ -511,7 +584,7 @@ function PlayerShoot()
             if Debugging then
                 print("Createing Portal Color:" .. currentPortal)
             end
-            PortalManager:CreatePortalAt(traceTable.pos, traceTable.normal, currentPortal)
+            PortalManager:TryToCreatePortalAt(traceTable.pos, traceTable.normal, currentPortal)
         else
             if Debugging then
                 DebugDrawLine(traceTable.startpos, traceTable.endpos, 255, 0, 0, false, 1)

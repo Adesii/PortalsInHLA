@@ -115,7 +115,7 @@ function PortalGun:shoot()
                 DebugDrawLine(traceTable.startpos, traceTable.pos, 0, 255, 0, false, 1)
                 DebugDrawLine(traceTable.pos, traceTable.pos + traceTable.normal * 10, 0, 0, 255, false, 1)
             end
-            _G.PortalManager:CreatePortalAt(traceTable.pos, traceTable.normal, Colors.Blue)
+            _G.PortalManager:TryToCreatePortalAt(traceTable.pos, traceTable.normal, Colors.Blue)
         end
         
         PortalGun.CanFire = false
@@ -153,7 +153,7 @@ function PortalGun:shoot()
                 DebugDrawLine(traceTable.startpos, traceTable.pos, 0, 255, 0, false, 1)
                 DebugDrawLine(traceTable.pos, traceTable.pos + traceTable.normal * 10, 0, 0, 255, false, 1)
             end
-            _G.PortalManager:CreatePortalAt(traceTable.pos, traceTable.normal, Colors.Orange)
+            _G.PortalManager:TryToCreatePortalAt(traceTable.pos, traceTable.normal, Colors.Orange)
         end
 
         
