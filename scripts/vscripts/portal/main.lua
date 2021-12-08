@@ -63,7 +63,10 @@ PortalManager = _G.PortalManager or {
 
     ColorEnts = {},
     BluePortalGroup = {},
-    OrangePortalGroup = {}
+    OrangePortalGroup = {},
+
+    BlueCamera = {},
+    OrangeCamera = {},
 }
 
 PortalWhitelist= {
@@ -275,7 +278,7 @@ function PortalManager:CreatePortalAt(position, normal, colortype)
     --DebugDrawLine(aimat:GetOrigin(), aimat:GetOrigin() + normal * 10, 255, 0, 0, true, 1)
     ParticleSystemTemplate.targetname = colortype .. "Portal_particles"
     ParticleSystemTemplate.cpoint5 = colortype .. "Portal"
-    ParticleSystemTemplate.origin = position + normal
+    ParticleSystemTemplate.origin = position + normal*2.25
     ParticleSystemTemplate.angles = RotateOrientation(VectorToAngles(normal), QAngle(90, 0, 0))
     local particlesEnt = SpawnEntityFromTableSynchronous("info_particle_system", ParticleSystemTemplate)
     local particles = ParticleManager:CreateParticleForPlayer(ParticleSystemTemplate.effect_name, 1, particlesEnt,
@@ -319,7 +322,9 @@ end
 function PortalManager:CreateViewLink()
 
     local BlueCamera = Entities:FindByName(nil,"@"..Colors.Blue .. "PointCamera")
+    PortalManager.BlueCamera = BlueCamera
     local OrangeCamera = Entities:FindByName(nil,"@"..Colors.Orange .. "PointCamera")
+    PortalManager.OrangeCamera = OrangeCamera
     local BluePortal = Entities:FindByName(nil,"@"..Colors.Blue .. "FuncMonitor")
     local OrangePortal = Entities:FindByName(nil,"@"..Colors.Orange .. "FuncMonitor")
 
@@ -353,9 +358,59 @@ function PortalManager:CreateViewLink()
 
     --EntFireByHandle(thisEntity,PortalManager.OrangePortalGroup[7],"Disable")
     --EntFireByHandle(thisEntity,PortalManager.BluePortalGroup[7],"Disable")
-    
-    
 end
+function PortalManager:UpdateView()
+    if PortalManager.BlueCamera == nil or PortalManager.OrangeCamera == nil or player == nil then
+        return tickrate
+    end
+    
+    local BlueCamera = PortalManager.BlueCamera
+    local OrangeCamera = PortalManager.OrangeCamera
+    local BluePortal = PortalManager.BluePortalGroup[1]
+    local OrangePortal = PortalManager.OrangePortalGroup[1]
+    local Player = player
+
+    local PlayerToBlue = OrangePortal:TransformPointWorldToEntity(player:EyePosition())
+    local PlayerToOrange = BluePortal:TransformPointWorldToEntity(player:EyePosition())
+    PlayerToOrange.z = PlayerToOrange.z * -1
+    PlayerToBlue.z = PlayerToBlue.z * -1
+    PlayerToBlue.x = Clamp(PlayerToBlue.x, 0, 40)
+    PlayerToBlue.y = Clamp(PlayerToBlue.y/10, -15,15)
+    PlayerToBlue.z = Clamp(PlayerToBlue.z/10, -10,10)
+
+    PlayerToOrange.x = Clamp(PlayerToOrange.x, 0, 40)
+    PlayerToOrange.y = Clamp(PlayerToOrange.y/10, -15, 15)
+    PlayerToOrange.z = Clamp(PlayerToOrange.z/10, -10, 10)
+    --print(PlayerToOrange)
+
+    local OrangeCamPos = OrangePortal:TransformPointEntityToWorld(-PlayerToOrange)
+    OrangeCamera:SetOrigin(OrangeCamPos)
+    local BlueCamPos = BluePortal:TransformPointEntityToWorld(-PlayerToBlue)
+    BlueCamera:SetOrigin(BlueCamPos)
+
+
+    local angles = VectorToAngles(OrangePortal:TransformPointEntityToWorld(PlayerToOrange) - OrangePortal:GetOrigin())
+    OrangeCamera:SetAngles(angles.x,angles.y,angles.z)
+
+    angles = VectorToAngles(BluePortal:TransformPointEntityToWorld(PlayerToBlue) - BluePortal:GetOrigin())
+    BlueCamera:SetAngles(angles.x,angles.y,angles.z)
+
+    local BlueCamFOV = Clamp(abs(AngleDiff(angles.y,OrangePortal:GetLocalAngles().y)),10,180)
+    local OrangeCamFOV = Clamp(abs(AngleDiff(angles.y,BluePortal:GetLocalAngles().y)),10,180)
+
+    --EntFireByHandle(nil,BlueCamera,"ChangeFOV",tostring(BlueCamFOV))
+    --EntFireByHandle(nil,OrangeCamera,"ChangeFOV",tostring(OrangeCamFOV))
+
+    --print(OrangeCamPos:Length())
+    --print(tostring(15000/OrangeCamPos:Length()))
+--
+    --print("_______")
+
+
+
+    return tickrate
+end
+
 function PortalManager:CloseViewLink()
     local BlueCamera = Entities:FindByName(nil,"@"..Colors.Blue .. "PointCamera")
     local OrangeCamera = Entities:FindByName(nil,"@"..Colors.Orange .. "PointCamera")
@@ -462,6 +517,9 @@ function Activate()
     thisEntity:SetThink(function()
         return PlayerShoot()
     end, "shootUpdater", 1)
+    thisEntity:SetThink(function()
+        return PortalManager:UpdateView()
+    end, "viewUpdater", 1)
 
     _G.PortalManager =_G.PortalManager or PortalManager
     _G.Debugging = _G.Debugging or Debugging

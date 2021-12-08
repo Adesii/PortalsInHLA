@@ -7,11 +7,18 @@ Layer0
 	//---- Rendering ----
 	F_DO_NOT_CAST_SHADOWS 1
 
+	//---- Translucent ----
+	F_ADDITIVE_BLEND_OVER_ALPHA 1
+
+	//---- Additive Blend Over Alpha ----
+	g_flAlphaOutputMaximum "1.000"
+	g_flAlphaOutputMinimum "0.000"
+
 	//---- Chromatic Abberation ----
-	g_flBlueShift "0.100"
-	g_flGreenShift "0.100"
-	g_flJitterSpeed "8.220"
-	g_flRedShift "0.100"
+	g_flBlueShift "0.000"
+	g_flGreenShift "0.000"
+	g_flJitterSpeed "0.000"
+	g_flRedShift "0.000"
 	TextureJitterControl "materials/workshop_examples/monitor/jitter_control.tga"
 
 	//---- Contrast ----
@@ -22,13 +29,13 @@ Layer0
 	g_flTexCoordOffsetU "0.000"
 	g_flTexCoordOffsetV "0.000"
 	g_flTintScale "1.000"
-	g_vColorTint "[0.556863 0.917647 0.952941 1.000000]"
+	g_vColorTint "[1.000000 1.000000 1.000000 1.000000]"
 	g_vScanlineTextureOffset "[0.000 0.000]"
 	g_vTexCoordScale "[1.000 1.000]"
 	ScanlineDistortion "materials/default/default_color.tga"
 	TextureColor "materials/default/default_color.tga"
 	TextureFilmGrain "materials/default/default.tga"
-	TextureScanlines "materials/workshop_examples/monitor/scanline_03.png"
+	TextureScanlines "[1.000000 1.000000 1.000000 0.000000]"
 	TextureVignette "[1.000000 1.000000 1.000000 0.000000]"
 
 	//---- Specular ----
