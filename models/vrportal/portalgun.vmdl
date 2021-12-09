@@ -152,62 +152,6 @@
 					},
 				]
 			},
-			{
-				_class = "GameDataList"
-				children = 
-				[
-					{
-						_class = "GenericGameData"
-						game_class = "hand_pose_pair"
-						game_keys = 
-						{
-							sequence = "idle"
-							pose_special_type = "0"
-							conform_fingers = false
-							allow_flip = false
-							parent_bone = "muzzle"
-							origin_left = [ 5.80606, 1.09503, -1.88603 ]
-							angles_left = [ -0.0, -59.9896, -96.2238 ]
-							origin_right = [ 5.80606, -1.09503, -1.88603 ]
-							angles_right = [ -0.000003, 59.989601, 96.223801 ]
-							max_distance = 3.0
-							finger_thumb = 0.267
-							finger_pinky = 0.214
-							finger_ring = 0.244
-							finger_middle = 0.327
-							finger_index = 0.38
-							has_extent = false
-							show_extent_helper = false
-							extent_origin_left = [ 0.0, 0.0, 2.0 ]
-							extent_origin_min_left = [ 0.0, 0.0, -1.0 ]
-							extent_origin_right = [ 0.0, -0.0, 2.0 ]
-							extent_origin_min_right = [ 0.0, 0.0, 1.0 ]
-							has_rotation = false
-							rotation_axis0 = [ 0.0, 0.0, 10.0 ]
-							rotation_axis1 = [ 0.0, 0.0, -10.0 ]
-							rotation_min = 0.0
-							rotation_max = 0.0
-							pivot_min = 0.0
-							pivot_max = 0.0
-						}
-					},
-				]
-			},
-			{
-				_class = "PhysicsShapeList"
-				children = 
-				[
-					{
-						_class = "PhysicsShapeCapsule"
-						parent_bone = "weapon"
-						surface_prop = "prop.plastic_barrel"
-						collision_prop = "default"
-						radius = 3.556719
-						point0 = [ 1.000001, -0.000003, -7.525686 ]
-						point1 = [ 0.999999, 0.000003, 8.745569 ]
-					},
-				]
-			},
 		]
 		model_archetype = "animated_model"
 		primary_associated_entity = "npc_furniture"
