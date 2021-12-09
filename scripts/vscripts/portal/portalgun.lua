@@ -10,6 +10,7 @@ PortalGun = _G.PortalGun or {
     OrangePortalButton = 9,
     PickupTrigger = 1,
     CanFire = true,
+    BlockFire = false,
     SupendFire = false,
     PickupRange = 100,
     
@@ -177,7 +178,7 @@ function PortalGun:shoot()
         --print("Can fire")
         --print(PortalGun.CanFire)
     end
-    if PortalGun.CanFire == false or PortalGun.SupendFire == true or PortalGun.SupendPickupFire == true or PortalGun.NotActive == true then
+    if PortalGun.CanFire == false or PortalGun.BlockFire == true or PortalGun.SupendFire == true or PortalGun.SupendPickupFire == true or PortalGun.NotActive == true then
         return 0.1
     end
     if PortalGun.Player:IsDigitalActionOnForHand(0,PortalGun.BluePortalButton) then
@@ -264,10 +265,10 @@ function PortalGun:FireGun(Color)
 end
 
 function ActivatePortalGun()
-    PortalGun.SupendFire = false
+    PortalGun.BlockFire = false
 end
 function DeactivatePortalGun()
-    PortalGun.SupendFire = true
+    PortalGun.BlockFire = true
 end
 
 
