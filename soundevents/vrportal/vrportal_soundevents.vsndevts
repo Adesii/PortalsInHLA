@@ -1,0 +1,147 @@
+<!-- kv3 encoding:text:version{e21c7f3c-8a33-41c5-9977-a76d3a32aa0d} format:generic:version{7412167c-06e9-4698-aff2-e63eb59037e7} -->
+{
+
+	"Portal.Open" = 
+	{
+		type = "hlvr_default_3d"
+		volume = "1.00"
+		vsnd_files = 
+		[
+						
+			"sounds/vrportal/portals/portal_open1.vsnd",
+			"sounds/vrportal/portals/portal_open2.vsnd",
+			"sounds/vrportal/portals/portal_open3.vsnd",
+			
+		]
+	}
+	"Portal.Open.Orange" = 
+	{
+		type = "hlvr_default_3d"
+		volume = "1.00"
+		vsnd_files = 
+		[
+						
+			"sounds/vrportal/portals/portal_open_red_01.vsnd",
+			
+		]
+	}
+	"Portal.Open.Blue" = 
+	{
+		type = "hlvr_default_3d"
+		volume = "1.00"
+		vsnd_files = 
+		[
+						
+			"sounds/vrportal/portals/portal_open_blue_01.vsnd",
+			
+		]
+	}
+	"Portal.Close" = 
+	{
+		type = "hlvr_default_3d"
+		volume = "1.00"
+		vsnd_files = 
+		[
+			"sounds/vrportal/portals/portal_close2.vsnd",
+		]
+	}
+	"Portal.Enter" = 
+	{
+		type = "hlvr_default_3d"
+		volume = "1.00"
+		vsnd_files = 
+		[
+			"sounds/vrportal/portals/portal_enter_01.vsnd",
+			"sounds/vrportal/portals/portal_enter_02.vsnd",
+			"sounds/vrportal/portals/portal_enter_03.vsnd",
+		]
+	}
+	"Portal.Exit" = 
+	{
+		type = "hlvr_default_3d"
+		volume = "1.00"
+		vsnd_files = 
+		[
+			"sounds/vrportal/portals/portal_exit_01.vsnd",
+			"sounds/vrportal/portals/portal_exit_02.vsnd",
+		]
+	}
+
+	"PortalPlayer.Enter" = 
+	{
+		type = "hlvr_default_3d"
+		volume = "1.00"
+		vsnd_files = 
+		[
+			"sounds/vrportal/player/portal_enter1.vsnd",
+			"sounds/vrportal/player/portal_enter2.vsnd",
+		]
+	}
+	"PortalPlayer.Exit" = 
+	{
+		type = "hlvr_default_3d"
+		volume = "1.00"
+		vsnd_files = 
+		[
+			"sounds/vrportal/player/portal_exit1.vsnd",
+			"sounds/vrportal/player/portal_exit2.vsnd",
+		]
+	}
+	"PortalGun.Use" = 
+	{
+		type = "hlvr_default_3d"
+		volume = "1.00"
+		vsnd_files = 
+		[
+			"sounds/vrportal/gun/object_use_01.vsnd",
+			"sounds/vrportal/gun/object_use_02.vsnd",
+		]
+	}
+	"PortalGun.UseFailed" = 
+	{
+		type = "hlvr_default_3d"
+		volume = "1.00"
+		vsnd_files = 
+		[
+			"sounds/vrportal/gun/object_use_failure_01.vsnd",
+		]
+	}
+	"PortalGun.UseLoop" = 
+	{
+		type = "hlvr_default_3d"
+		volume = "1"
+		vsnd_files = 
+		[
+			"sounds/vrportal/gun/object_use_lp_1.vsnd",
+		]
+	}
+	"PortalGun.Shoot.Orange" =
+	{
+		type = "hlvr_default_3d"
+		volume = "1.00"
+		vsnd_files = 
+		[
+			"sounds/vrportal/gun/portalgun_shoot_red1.vsnd",
+		]
+	}
+	"PortalGun.Shoot.Blue" =
+	{
+		type = "hlvr_default_3d"
+		volume = "1.00"
+		vsnd_files = 
+		[
+			"sounds/vrportal/gun/portalgun_shoot_blue1.vsnd",
+		]
+	}
+	"PortalGun.Equipped"=
+	{
+		type = "hlvr_default_3d"
+		volume = "1"
+		vsnd_files = 
+		[
+			"sounds/vrportal/gun/portalgun_powerup1.vsnd",
+		]
+	}
+
+	
+}

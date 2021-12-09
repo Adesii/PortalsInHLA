@@ -11,11 +11,23 @@ PortalGun = _G.PortalGun or {
     PickupTrigger = 1,
     CanFire = true,
     SupendFire = false,
+    PickupRange = 100,
+    
+    PickedEntity = nil,
+    SupendPickupFire = false,
+    NotActive = false,
 
     MuzzleAttachment = "firebarrel",
 
     HoldingHand = {},
     Player = {},
+}
+
+PickupWhitelist = {
+    "prop_physics",
+    "func_physbox",
+    "prop_physics_override",
+    "prop_physics_interactive",
 }
 
 function Precache(context)
@@ -31,6 +43,8 @@ function Activate()
     thisEntity:SetThink(function()
         return PortalGun:shoot()
     end, "portalgunshooting", 1.2)
+
+    _G.PortalGun = PortalGun
 end
 
 function PortalGun:init()
@@ -40,11 +54,12 @@ function PortalGun:init()
     if not player:GetHMDAvatar() then
         return
     end
-    PortalGun.HoldingHand = player:GetHMDAvatar():GetVRHand(1)
+    PortalGun.Hand = player:GetHMDAvatar():GetVRHand(1)
+    PortalGun.HoldingHand = player:GetHMDAvatar():GetVRHand(1):FirstMoveChild()
     --PortalGun.HoldingHand:AddHandAttachment(thisEntity)
-    thisEntity:SetParent(PortalGun.HoldingHand:FirstMoveChild(), "grabbity_glove")
-    thisEntity:SetLocalOrigin(Vector(5, 0, 0))
-    thisEntity:SetLocalAngles(0,0,0)
+    thisEntity:SetParent(PortalGun.HoldingHand, "hand_r")
+    thisEntity:SetLocalOrigin(Vector(-7.5, -1, -2.2))
+    thisEntity:SetLocalAngles(0,180,0)
     thisEntity:RegisterAnimTagListener(AnimGraphListener)
     thisEntity:SetOwner(player)
 
@@ -76,94 +91,176 @@ function PortalGun:init()
     ParticleManager:SetParticleControlEnt(PortalGun.LightParticleIndex, 0,PortalGun.entity,5,"light",Vector(0,0,0),true)
     ParticleManager:SetParticleControl(PortalGun.LightParticleIndex, 5,Vector(0,0.4,1))
 
+    ListenToGameEvent("weapon_switch",HandeWeaponSwitch,player)
 end
 
+function HandeWeaponSwitch(args,idk)
+    --DeepPrintTable(idk)
+    if idk["item"] ~= "hand_use_controller" then
+        thisEntity:SetParent(nil,"")
+        thisEntity:SetAbsOrigin(Vector(0,0,0))
+        thisEntity:SetAbsAngles(0,0,0)
+        PortalGun.NotActive = true
+
+    else
+        thisEntity:SetParent(PortalGun.HoldingHand, "hand_r")
+        thisEntity:SetLocalOrigin(Vector(-7.5, -1, -2.2))
+        thisEntity:SetLocalAngles(15,180,0)
+        thisEntity:SetOwner(player)
+
+        StartSoundEvent("PortalGun.Equipped",thisEntity)
+        
+        PortalGun.NotActive = false
+    end
+
+end
+sincelastuse = 0
+--The Portal Gun can pick things up similar to the Gravity Gun
+function PortalGun:HandlePickupAbility()
+    if player:GetAnalogActionPositionForHand(0,1).x > 0.5 and PortalGun.PickedEntity == nil  then
+        PortalGun.MuzzleIndex = PortalGun.MuzzleIndex or thisEntity:ScriptLookupAttachment(PortalGun.MuzzleAttachment)
+        local tracetable = {
+            startpos = thisEntity:GetAttachmentOrigin(PortalGun.MuzzleIndex),
+            endpos = thisEntity:GetAttachmentOrigin(PortalGun.MuzzleIndex) + PortalGun.entity:GetForwardVector() * PortalGun.PickupRange,
+            ignore = thisEntity,
+        }
+        TraceLine(tracetable)
+        if tracetable.hit and vlua.find(PickupWhitelist,tracetable.enthit:GetClassname()) then
+            StartSoundEventFromPositionReliable("PortalGun.Use",thisEntity:GetAbsOrigin())
+            StartSoundEvent("PortalGun.UseLoop",thisEntity)
+            PortalGun.PickedEntity = tracetable.enthit
+        else
+            if sincelastuse < 0.2 then
+                sincelastuse = sincelastuse + 0.1
+            else
+                StartSoundEventFromPositionReliable("PortalGun.UseFailed",thisEntity:GetAbsOrigin())
+                sincelastuse = 0
+            end
+        end
+        PortalGun.SupendPickupFire = true
+    elseif player:GetAnalogActionPositionForHand(0,1).x < 0.5 and PortalGun.PickedEntity ~= nil then
+        StopSoundEvent("PortalGun.UseLoop",player)
+        PortalGun.PickedEntity = nil
+        PortalGun.SupendPickupFire = false
+    elseif PortalGun.PickedEntity ~= nil then
+        local entity = PortalGun.PickedEntity
+        if entity:IsNull() then
+            return
+        end
+        local amountby = VectorDistance(thisEntity:GetOrigin(),entity:GetOrigin())/50
+        local amount = math.min(amountby,2)
+        local finalposition = (thisEntity:GetOrigin()+thisEntity:GetForwardVector()*100)
+        if VectorDistance(finalposition,entity:GetOrigin()) < 25 then
+            entity:ApplyAbsVelocityImpulse(-GetPhysVelocity(entity)/2)
+        else
+            entity:ApplyAbsVelocityImpulse((((finalposition-entity:GetOrigin()))*amount)-(GetPhysVelocity(entity)/5))
+        end
+    else
+        PortalGun.SupendPickupFire = false
+    end
+end
+
+sinceLastshot = 0
 function PortalGun:shoot()
     
     if not player:GetHMDAvatar() then
         return 0.5
     end
-    if PortalGun.CanFire == false or PortalGun.SupendFire == true then
+    PortalGun:HandlePickupAbility()
+    if PortalGun.CanFire == false and sinceLastshot < 1 then
+        sinceLastshot = sinceLastshot + FrameTime()*5
+        --print("Cant fire yet")
+        --print(sinceLastshot)
+    elseif sinceLastshot > 1 then
+        sinceLastshot = 0
+        PortalGun.CanFire = true
+        --print("Can fire")
+        --print(PortalGun.CanFire)
+    end
+    if PortalGun.CanFire == false or PortalGun.SupendFire == true or PortalGun.SupendPickupFire == true or PortalGun.NotActive == true then
         return 0.1
     end
     if PortalGun.Player:IsDigitalActionOnForHand(0,PortalGun.BluePortalButton) then
-        if Debugging then
-            print("Blue Portal")
-        end
-        PortalGun.entity:SetGraphParameterBool("bfired",true)
-        PortalGun.MuzzleIndex = PortalGun.MuzzleIndex or thisEntity:ScriptLookupAttachment(PortalGun.MuzzleAttachment)
-        local gunmuzzle = thisEntity:GetAttachmentOrigin(PortalGun.MuzzleIndex)
-        local gunforward = thisEntity:GetAttachmentForward(PortalGun.MuzzleIndex)
-        local traceTable = {
-            startpos = gunmuzzle,
-            endpos = gunmuzzle + gunforward * 10000,
-            ignore = player
-        }
-        TraceLine(traceTable)
-        if traceTable.hit then
-            EntFireByHandle(thisEntity,traceTable.enthit,"FireUser1")
-            if PortalManager.PortableFunc then
-                if  traceTable.enthit:GetClassname() ~= "func_brush" then
-                    return tickrate
-                end
-            else
-                if  traceTable.enthit:GetClassname() == "func_brush" then
-                    return tickrate
-                end
-            end
-            if Debugging then
-                DebugDrawLine(traceTable.startpos, traceTable.pos, 0, 255, 0, false, 1)
-                DebugDrawLine(traceTable.pos, traceTable.pos + traceTable.normal * 10, 0, 0, 255, false, 1)
-            end
-            _G.PortalManager:TryToCreatePortalAt(traceTable.pos, traceTable.normal, Colors.Blue)
-        end
-        
-        PortalGun.CanFire = false
-        PortalGun.HoldingHand:FireHapticPulse(1)
-
-        ParticleManager:SetParticleControl(PortalGun.BarrelParticleIndex, 5,_G.PortalManager.ColorEnts[Colors.Blue]:GetOrigin())
-        ParticleManager:SetParticleControl(PortalGun.LightParticleIndex, 5,_G.PortalManager.ColorEnts[Colors.Blue]:GetOrigin())
+        PortalGun:FireGun(Colors.Blue)
     end
     if PortalGun.Player:IsDigitalActionOnForHand(0,PortalGun.OrangePortalButton) then
-        if Debugging then
-            print("Orange Portal")
-        end
-        PortalGun.entity:SetGraphParameterBool("bfired",true)
-        PortalGun.MuzzleIndex = PortalGun.MuzzleIndex or thisEntity:ScriptLookupAttachment(PortalGun.MuzzleAttachment)
-        local gunmuzzle = thisEntity:GetAttachmentOrigin(PortalGun.MuzzleIndex)
-        local gunforward = thisEntity:GetAttachmentForward(PortalGun.MuzzleIndex)
-        local traceTable = {
-            startpos = gunmuzzle,
-            endpos = gunmuzzle + gunforward * 10000,
-            ignore = player
-        }
-        TraceLine(traceTable)
-        if traceTable.hit then
-            EntFireByHandle(thisEntity,traceTable.enthit,"FireUser2")
-            if PortalManager.PortableFunc then
-                if  traceTable.enthit:GetClassname() ~= "func_brush" then
-                    return tickrate
-                end
-            else
-                if  traceTable.enthit:GetClassname() == "func_brush" then
-                    return tickrate
-                end
-            end
-            if Debugging then
-                DebugDrawLine(traceTable.startpos, traceTable.pos, 0, 255, 0, false, 1)
-                DebugDrawLine(traceTable.pos, traceTable.pos + traceTable.normal * 10, 0, 0, 255, false, 1)
-            end
-            _G.PortalManager:TryToCreatePortalAt(traceTable.pos, traceTable.normal, Colors.Orange)
-        end
-
-        
-        PortalGun.CanFire = false
-        PortalGun.HoldingHand:FireHapticPulse(1)
-
-        ParticleManager:SetParticleControl(PortalGun.BarrelParticleIndex, 5,_G.PortalManager.ColorEnts[Colors.Orange]:GetOrigin())
-        ParticleManager:SetParticleControl(PortalGun.LightParticleIndex, 5,_G.PortalManager.ColorEnts[Colors.Orange]:GetOrigin())
+        PortalGun:FireGun(Colors.Orange)
     end
     return 0.1
+end
+
+function PortalGun:FireGun(Color)
+    if Debugging then
+        print(Color.." Portal")
+    end
+    PortalGun.entity:SetGraphParameterBool("bfired",true)
+    PortalGun.MuzzleIndex = PortalGun.MuzzleIndex or thisEntity:ScriptLookupAttachment(PortalGun.MuzzleAttachment)
+    local gunmuzzle = thisEntity:GetAttachmentOrigin(PortalGun.MuzzleIndex)
+    local gunforward = thisEntity:GetAttachmentForward(PortalGun.MuzzleIndex)
+    local traceTable = {
+        startpos = gunmuzzle,
+        endpos = gunmuzzle + gunforward * 10000,
+        ignore = player
+    }
+    TraceLine(traceTable)
+    
+    if traceTable.hit then
+        if Color == Colors.Blue then
+            EntFireByHandle(thisEntity,traceTable.enthit,"FireUser1")
+        else
+            EntFireByHandle(thisEntity,traceTable.enthit,"FireUser2")
+        end
+        if PortalManager.PortableFunc then
+            if  traceTable.enthit:GetClassname() ~= "func_brush" then
+                return tickrate
+            end
+        else
+            if  traceTable.enthit:GetClassname() == "func_brush" then
+                return tickrate
+            end
+        end
+        local pindex = ParticleManager:CreateParticle("particles/portalgun_shooting.vpcf", 1, thisEntity)
+        ParticleManager:SetParticleControl(pindex, 0, gunmuzzle)
+        ParticleManager:SetParticleControlForward(pindex, 1, gunforward)
+        ParticleManager:SetParticleControl(pindex, 5, PortalManager.ColorEnts[Color]:GetOrigin())
+        if Color == Colors.Blue then
+            StartSoundEventFromPositionReliable("PortalGun.Shoot.Blue",gunmuzzle)
+        else
+            StartSoundEventFromPositionReliable("PortalGun.Shoot.Orange",gunmuzzle)
+        end
+        if Debugging then
+            DebugDrawLine(traceTable.startpos, traceTable.endpos, 0, 255, 0, false, 1)
+            DebugDrawLine(traceTable.pos, traceTable.endpos + traceTable.normal * 10, 0, 0, 255, false, 1)
+        end
+        if _G.PortalManager:TryToCreatePortalAt(traceTable.pos, traceTable.normal, Color) == false then
+        else
+            if Color == Colors.Blue then
+                StartSoundEventFromPositionReliable("Portal.Open",traceTable.pos)
+                StartSoundEventFromPositionReliable("Portal.Open.Blue",traceTable.pos)
+            else
+                StartSoundEventFromPositionReliable("Portal.Open",traceTable.pos)
+                StartSoundEventFromPositionReliable("Portal.Open.Orange",traceTable.pos)
+            end
+        end
+    else
+        local pindex = ParticleManager:CreateParticle("particles/portalgun_shooting.vpcf", 1, thisEntity)
+        ParticleManager:SetParticleControl(pindex, 0, gunmuzzle)
+        ParticleManager:SetParticleControlForward(pindex, 1, gunforward)
+        ParticleManager:SetParticleControl(pindex, 5, PortalManager.ColorEnts[Color]:GetOrigin())
+        if Color == Colors.Blue then
+            StartSoundEventFromPositionReliable("PortalGun.Shoot.Blue",gunmuzzle)
+        else
+            StartSoundEventFromPositionReliable("PortalGun.Shoot.Orange",gunmuzzle)
+        end
+    end
+
+    
+    PortalGun.CanFire = false
+    PortalGun.Hand:FireHapticPulse(1)
+
+    ParticleManager:SetParticleControl(PortalGun.BarrelParticleIndex, 5,_G.PortalManager.ColorEnts[Color]:GetOrigin())
+    ParticleManager:SetParticleControl(PortalGun.LightParticleIndex, 5,_G.PortalManager.ColorEnts[Color]:GetOrigin())
+    sinceLastshot = 0
 end
 
 function ActivatePortalGun()

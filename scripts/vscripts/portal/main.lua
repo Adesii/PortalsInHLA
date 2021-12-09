@@ -125,7 +125,8 @@ function PortalManager:init()
                 else
                     player:GetHMDAnchor():SetAbsOrigin((PortalManager.BluePortalGroup[1]:GetAbsOrigin()+PortalManager.BluePortalGroup[1]:GetForwardVector()*30)+(player:GetHMDAnchor():GetOrigin()-player:GetHMDAvatar():GetOrigin()))
                 end
-                laspplayerteleport = GetFrameCount() + 10
+                StartSoundEvent("PortalPlayer.Enter",player)
+                laspplayerteleport = GetFrameCount() + 50
             elseif laspplayerteleport- GetFrameCount() < 0 and PortalManager:CanTeleport(player, loopColor) and player:GetHMDAvatar() == nil then
                 player:SetOrigin(player:GetOrigin()+Vector(0,0,10))
                 PortalManager:teleport(player, loopColor)
@@ -241,6 +242,14 @@ function PortalManager:teleport(portableEnt, colorportal)
         print(newVel)
         print("___________")
     end
+    if _G.PortalGun then
+        if _G.PortalGun.PickedEntity == portableEnt then
+            _G.PortalGun.PickedEntity = nil
+        end
+    end
+
+    StartSoundEventFromPositionReliable("Portal.Enter",OriginalPortal:GetOrigin())
+    StartSoundEventFromPositionReliable("Portal.Exit",Portal:GetOrigin())
     --local newVel = dir * vel:Length()
     --newVel = newVel - (dir * 20 * (portableEnt:GetVelocity():Length() / 90))
 
@@ -517,6 +526,7 @@ function PortalManager:ClosePortal(colortype)
         return
     end
     if colortype == Colors.Blue then
+        StartSoundEventFromPositionReliable("Portal.Close",PortalManager.BluePortalGroup[1]:GetOrigin())
         for key, value in pairs(PortalManager.BluePortalGroup) do
             if key == 3 then
                 ParticleManager:DestroyParticle(PortalManager.BluePortalGroup[key], true)
@@ -526,6 +536,7 @@ function PortalManager:ClosePortal(colortype)
             PortalManager.BluePortalGroup[key] = nil
         end
     else
+        StartSoundEventFromPositionReliable("Portal.Close",PortalManager.OrangePortalGroup[1]:GetOrigin())
         for key, value in pairs(PortalManager.OrangePortalGroup) do
             if key == 3 then
                 ParticleManager:DestroyParticle(PortalManager.OrangePortalGroup[key], true)
