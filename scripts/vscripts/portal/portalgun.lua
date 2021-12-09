@@ -11,12 +11,14 @@ PortalGun = _G.PortalGun or {
     PickupTrigger = 1,
     CanFire = true,
     BlockFire = false,
-    SupendFire = false,
     PickupRange = 100,
     
     PickedEntity = nil,
     SupendPickupFire = false,
     NotActive = false,
+
+    CantFireBlue = false,
+    CantFireOrange = false,
 
     MuzzleAttachment = "firebarrel",
 
@@ -31,13 +33,23 @@ PickupWhitelist = {
     "prop_physics_interactive",
 }
 
+DoIncludeScript("portal/storage", thisEntity:GetPrivateScriptScope())
+
 function Precache(context)
     print("Portalgun Precache")
     PrecacheResource("particle", "particles/portalgun_barrel.vpcf", context)
     PrecacheResource("particle", "particles/portalgun_light.vpcf", context)
 end
-function Activate()
+function Activate(activateType)
     print("PortalGun Activated")
+    if activateType == 2 then
+        thisEntity:SetThink(function ()
+            GunRestore()
+            
+        end,"restoregun",0.5)
+        return
+    end
+
     thisEntity:SetThink(function()
         return PortalGun:init()
     end, "portalguninit", 0.5)
@@ -45,6 +57,51 @@ function Activate()
         return PortalGun:shoot()
     end, "portalgunshooting", 1.2)
 
+    _G.PortalGun = PortalGun
+end
+
+
+function GunRestore()
+    print("Restoring PortalGun")
+    PortalGun.BlockFire = Storage:LoadBoolean("BlockFire")
+    PortalGun.NotActive = Storage:LoadBoolean("NotActive")
+
+    PortalGun.CantFireBlue = Storage:LoadBoolean("CantFireBlue")
+    PortalGun.CantFireOrange = Storage:LoadBoolean("CantFireOrange")
+
+    --print("Restored BlockFire: " .. tostring(PortalGun.BlockFire))
+    --print("Restored NotActive: " .. tostring(PortalGun.NotActive))
+    --print("Restored CantFireBlue: " .. tostring(PortalGun.CanFireBlue))
+    --print("Restored CantFireOrange: " .. tostring(PortalGun.CanFireOrange))
+
+    player = player or Entities:GetLocalPlayer()
+    PortalGun.Player = player
+    if not player:GetHMDAvatar() then
+        return
+    end
+    PortalGun.Hand = player:GetHMDAvatar():GetVRHand(1)
+    PortalGun.HoldingHand = player:GetHMDAvatar():GetVRHand(1):FirstMoveChild()
+    PortalGun.entity = thisEntity
+
+    thisEntity:RegisterAnimTagListener(AnimGraphListener)
+
+    PortalGun.BarrelParticleIndex = ParticleManager:CreateParticle("particles/portalgun_barrel.vpcf", 1, thisEntity)
+    PortalGun.LightParticleIndex = ParticleManager:CreateParticle("particles/portalgun_light.vpcf", 1, thisEntity)
+    ParticleManager:SetParticleAlwaysSimulate(PortalGun.BarrelParticleIndex)
+    ParticleManager:SetParticleAlwaysSimulate(PortalGun.LightParticleIndex)
+    
+    --ParticleManager:SetParticleControl(PortalGun.BarrelParticleIndex, 5,_G.PortalManager.ColorEnts[Colors.Blue]:GetOrigin())
+    ParticleManager:SetParticleControlEnt(PortalGun.BarrelParticleIndex, 0,thisEntity,5,"innerlaser",Vector(0,0,0),true)
+    ParticleManager:SetParticleControlEnt(PortalGun.BarrelParticleIndex, 1,thisEntity,5,"innerlaser_end",Vector(0,0,0),true)
+    ParticleManager:SetParticleControl(PortalGun.BarrelParticleIndex, 5,Vector(0,0.4,1))
+    ParticleManager:SetParticleControlEnt(PortalGun.LightParticleIndex, 0,thisEntity,5,"light",Vector(0,0,0),true)
+    ParticleManager:SetParticleControl(PortalGun.LightParticleIndex, 5,Vector(0,0.4,1))
+
+    ListenToGameEvent("weapon_switch",HandeWeaponSwitch,player)
+
+    thisEntity:SetThink(function()
+        return PortalGun:shoot()
+    end, "portalgunshooting", 1.2)
     _G.PortalGun = PortalGun
 end
 
@@ -67,29 +124,29 @@ function PortalGun:init()
     PortalGun.entity = thisEntity
 
 
-    PortalGun.BarrelParticleSystem = SpawnEntityFromTableSynchronous("info_particle_system", {
-        targetname = "portalgun_barrel",
-        effect_name = "particles/portalgun_barrel.vpcf",
-        cpoint0 = "portalgun",
-    })
-    
-    PortalGun.LightParticleSystem = SpawnEntityFromTableSynchronous("info_particle_system", {
-        targetname = "portalgun_light",
-        effect_name = "particles/portalgun_light.vpcf",
-        cpoint0 = "portalgun",
-    })
+    --PortalGun.BarrelParticleSystem = SpawnEntityFromTableSynchronous("info_particle_system", {
+    --    targetname = "portalgun_barrel",
+    --    effect_name = "particles/portalgun_barrel.vpcf",
+    --    cpoint0 = "portalgun",
+    --})
+    --
+    --PortalGun.LightParticleSystem = SpawnEntityFromTableSynchronous("info_particle_system", {
+    --    targetname = "portalgun_light",
+    --    effect_name = "particles/portalgun_light.vpcf",
+    --    cpoint0 = "portalgun",
+    --})
     --PortalGun.LightParticleSystem:SetAbsOrigin(thisEntity:GetAbsOrigin())
     
-    PortalGun.BarrelParticleIndex = ParticleManager:CreateParticleForPlayer("particles/portalgun_barrel.vpcf", 1, PortalGun.BarrelParticleSystem,player)
-    PortalGun.LightParticleIndex = ParticleManager:CreateParticleForPlayer("particles/portalgun_light.vpcf", 1, PortalGun.LightParticleSystem,player)
+    PortalGun.BarrelParticleIndex = ParticleManager:CreateParticle("particles/portalgun_barrel.vpcf", 1, thisEntity)
+    PortalGun.LightParticleIndex = ParticleManager:CreateParticle("particles/portalgun_light.vpcf", 1, thisEntity)
     ParticleManager:SetParticleAlwaysSimulate(PortalGun.BarrelParticleIndex)
     ParticleManager:SetParticleAlwaysSimulate(PortalGun.LightParticleIndex)
     
     --ParticleManager:SetParticleControl(PortalGun.BarrelParticleIndex, 5,_G.PortalManager.ColorEnts[Colors.Blue]:GetOrigin())
-    ParticleManager:SetParticleControlEnt(PortalGun.BarrelParticleIndex, 0,PortalGun.entity,5,"innerlaser",Vector(0,0,0),true)
-    ParticleManager:SetParticleControlEnt(PortalGun.BarrelParticleIndex, 1,PortalGun.entity,5,"innerlaser_end",Vector(0,0,0),true)
+    ParticleManager:SetParticleControlEnt(PortalGun.BarrelParticleIndex, 0,thisEntity,5,"innerlaser",Vector(0,0,0),true)
+    ParticleManager:SetParticleControlEnt(PortalGun.BarrelParticleIndex, 1,thisEntity,5,"innerlaser_end",Vector(0,0,0),true)
     ParticleManager:SetParticleControl(PortalGun.BarrelParticleIndex, 5,Vector(0,0.4,1))
-    ParticleManager:SetParticleControlEnt(PortalGun.LightParticleIndex, 0,PortalGun.entity,5,"light",Vector(0,0,0),true)
+    ParticleManager:SetParticleControlEnt(PortalGun.LightParticleIndex, 0,thisEntity,5,"light",Vector(0,0,0),true)
     ParticleManager:SetParticleControl(PortalGun.LightParticleIndex, 5,Vector(0,0.4,1))
 
     ListenToGameEvent("weapon_switch",HandeWeaponSwitch,player)
@@ -102,6 +159,7 @@ function HandeWeaponSwitch(args,idk)
         thisEntity:SetAbsOrigin(Vector(0,0,0))
         thisEntity:SetAbsAngles(0,0,0)
         PortalGun.NotActive = true
+        Storage:SaveBoolean("NotActive",true)
 
     else
         thisEntity:SetParent(PortalGun.HoldingHand, "hand_r")
@@ -112,6 +170,7 @@ function HandeWeaponSwitch(args,idk)
         StartSoundEvent("PortalGun.Equipped",thisEntity)
         
         PortalGun.NotActive = false
+        Storage:SaveBoolean("NotActive",false)
     end
 
 end
@@ -178,13 +237,13 @@ function PortalGun:shoot()
         --print("Can fire")
         --print(PortalGun.CanFire)
     end
-    if PortalGun.CanFire == false or PortalGun.BlockFire == true or PortalGun.SupendFire == true or PortalGun.SupendPickupFire == true or PortalGun.NotActive == true then
+    if PortalGun.CanFire == false or PortalGun.BlockFire == true or PortalGun.SupendPickupFire == true or PortalGun.NotActive == true then
         return 0.1
     end
-    if PortalGun.Player:IsDigitalActionOnForHand(0,PortalGun.BluePortalButton) then
+    if PortalGun.Player:IsDigitalActionOnForHand(0,PortalGun.BluePortalButton) and PortalGun.CantFireBlue == false then
         PortalGun:FireGun(Colors.Blue)
     end
-    if PortalGun.Player:IsDigitalActionOnForHand(0,PortalGun.OrangePortalButton) then
+    if PortalGun.Player:IsDigitalActionOnForHand(0,PortalGun.OrangePortalButton) and PortalGun.CantFireOrange == false then
         PortalGun:FireGun(Colors.Orange)
     end
     return 0.1
@@ -266,9 +325,27 @@ end
 
 function ActivatePortalGun()
     PortalGun.BlockFire = false
+    Storage:SaveBoolean("BlockFire",false)
 end
 function DeactivatePortalGun()
     PortalGun.BlockFire = true
+    Storage:SaveBoolean("BlockFire",true)
+end
+function EnableBluePortalGun()
+    PortalGun.CantFireBlue = false
+    Storage:SaveBoolean("CantFireBlue",false)
+end
+function DisableBluePortalGun()
+    PortalGun.CantFireBlue = true
+    Storage:SaveBoolean("CantFireBlue",true)
+end
+function EnableOrangePortalGun()
+    PortalGun.CantFireOrange = false
+    Storage:SaveBoolean("CantFireOrange",false)
+end
+function DisableOrangePortalGun()
+    PortalGun.CantFireOrange = true
+    Storage:SaveBoolean("CantFireOrange",true)
 end
 
 

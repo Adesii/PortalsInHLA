@@ -95,6 +95,9 @@ PortalWhitelist= {
 }
 local laspplayerteleport = 0
 
+
+DoIncludeScript("portal/storage", thisEntity:GetPrivateScriptScope())
+
 function PortalManager:init()
     PortalManager.ColorEnts = {
         [Colors.Orange] = Entities:FindByName(nil, "@OrangePortalColor"),
@@ -366,7 +369,7 @@ function PortalManager:CreatePortalAt(position, normal, colortype)
     local particles = ParticleManager:CreateParticleForPlayer(ParticleSystemTemplate.effect_name, 1, particlesEnt,
         player)
     ParticleManager:SetParticleControl(particles, 5, PortalManager.ColorEnts[colortype]:GetOrigin())
-
+    ViewPortalTemplate.targetname = colortype .. "Portalview"
     ViewPortalTemplate.angles = RotateOrientation(VectorToAngles(normal), QAngle(90, 0, 0))
     ViewPortalTemplate.skin = colortype
     local ViewPortal = SpawnEntityFromTableSynchronous("prop_dynamic", ViewPortalTemplate)
@@ -397,6 +400,14 @@ function PortalManager:CreatePortalAt(position, normal, colortype)
     else
         PortalManager:CloseViewLink()
     end
+
+    PortalManager.Storage:SaveBoolean(colortype.."PortalActive", true)
+    PortalManager.Storage:SaveVector(colortype.."PortalPos", position)
+    PortalManager.Storage:SaveVector(colortype.."PortalNormal", normal)
+
+    --print("GetPortalSaved"..tostring(PortalManager.Storage:LoadBoolean(colortype.."PortalActive")))
+    --print("GetPortalSaved"..tostring(PortalManager.Storage:LoadVector(colortype.."PortalPos")))
+    --print("GetPortalSaved"..tostring(PortalManager.Storage:LoadVector(colortype.."PortalNormal")))
 
 end
 
@@ -442,7 +453,7 @@ function PortalManager:CreateViewLink()
     --EntFireByHandle(thisEntity,PortalManager.BluePortalGroup[7],"Disable")
 end
 function PortalManager:UpdateView()
-    if PortalManager.BlueCamera == nil or PortalManager.OrangeCamera == nil or player == nil then
+    if PortalManager.BlueCamera == nil or PortalManager.OrangeCamera == nil or player == nil or PortalManager.BluePortalGroup[1] == nil or PortalManager.OrangePortalGroup[1] == nil then
         return tickrate
     end
     
@@ -547,6 +558,7 @@ function PortalManager:ClosePortal(colortype)
         end
     end
     PortalManager:CloseViewLink()
+    Storage:SaveBoolean(colortype.."PortalActive", false)
 end
 
 currentPortal = Colors.Blue
@@ -607,8 +619,34 @@ function PlayerShoot()
     return 0.1
 end
 
-function Activate()
+function Activate(ActivateType)
     print("Portal Activated")
+    PortalManager.Storage = Storage
+    if ActivateType == 2  then
+        print("Restoring Portals")
+        thisEntity:SetThink(function ()
+            if PortalManager.Storage:LoadBoolean("bluePortalActive") == true then
+                Entities:FindByName(nil,Colors.Blue.."Portal_light_omni"):Destroy()
+                Entities:FindByName(nil,Colors.Blue.."Portal_teleport"):Destroy()
+                Entities:FindByName(nil,Colors.Blue.."LogicScript"):Destroy()
+                Entities:FindByName(nil,Colors.Blue.."Portal_particles"):Destroy()
+                Entities:FindByName(nil,Colors.Blue.."Portal_aimat"):Destroy()
+                Entities:FindByName(nil,Colors.Blue.."Portalview"):Destroy()
+                PortalManager:CreatePortalAt(PortalManager.Storage:LoadVector("bluePortalPos"),PortalManager.Storage:LoadVector("bluePortalNormal"),Colors.Blue)
+            end
+            if Storage:LoadBoolean("orangePortalActive") == true then
+                Entities:FindByName(nil,Colors.Orange.."Portal_light_omni"):Destroy()
+                Entities:FindByName(nil,Colors.Orange.."Portal_teleport"):Destroy()
+                Entities:FindByName(nil,Colors.Orange.."LogicScript"):Destroy()
+                Entities:FindByName(nil,Colors.Orange.."Portal_particles"):Destroy()
+                Entities:FindByName(nil,Colors.Orange.."Portal_aimat"):Destroy()
+                Entities:FindByName(nil,Colors.Orange.."Portalview"):Destroy()
+                PortalManager:CreatePortalAt(PortalManager.Storage:LoadVector("orangePortalPos"),PortalManager.Storage:LoadVector("orangePortalNormal"),Colors.Orange)
+            end
+            PortalManager.PortableFuncs = PortalManager.Storage:LoadBoolean("PortableFunc")
+        end,"restorg",0.2)
+        
+    end
     thisEntity:SetThink(function()
         return PortalManager:init()
     end, "flybyUpdater", 0.1)
@@ -653,6 +691,7 @@ function SetFuncMode(args)
         
     end
     PortalManager.PortableFunc =  true
+    Storage:SaveBoolean("PortableFunc", true)
 end
 
 function CloseAllPortals(args)
