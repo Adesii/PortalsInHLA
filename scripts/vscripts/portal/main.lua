@@ -348,7 +348,7 @@ function PortalManager:CreatePortalAt(position, normal, colortype)
     if colortype ~= Colors.Blue and colortype ~= Colors.Orange then
         return
     end
-    if Entities:FindByName(nil, colortype .. "LogicScript") then
+    if Entities:FindByName(nil, colortype .. "LogicScript") ~= nil then
         PortalManager:ClosePortal(colortype)
     end
     LightOmniTemplate.targetname = colortype .. "Portal_light_omni"
@@ -536,7 +536,7 @@ function PortalManager:ClosePortal(colortype)
     if colortype ~= Colors.Blue and colortype ~= Colors.Orange then
         return
     end
-    if colortype == Colors.Blue then
+    if colortype == Colors.Blue and PortalManager.BluePortalGroup[1] ~= nil  then
         StartSoundEventFromPositionReliable("Portal.Close",PortalManager.BluePortalGroup[1]:GetOrigin())
         for key, value in pairs(PortalManager.BluePortalGroup) do
             if key == 3 then
@@ -546,7 +546,7 @@ function PortalManager:ClosePortal(colortype)
             end
             PortalManager.BluePortalGroup[key] = nil
         end
-    else
+    elseif PortalManager.OrangePortalGroup[1] ~= nil then
         StartSoundEventFromPositionReliable("Portal.Close",PortalManager.OrangePortalGroup[1]:GetOrigin())
         for key, value in pairs(PortalManager.OrangePortalGroup) do
             if key == 3 then
@@ -556,6 +556,8 @@ function PortalManager:ClosePortal(colortype)
             end
             PortalManager.OrangePortalGroup[key] = nil
         end
+    else
+        return
     end
     PortalManager:CloseViewLink()
     Storage:SaveBoolean(colortype.."PortalActive", false)
