@@ -42,9 +42,6 @@ function Precache(context)
 end
 function Activate(activateType)
     print("PortalGun Activated")
-    if _G.PortalGun ~= nil then
-        return
-    end
     if activateType == 2 then
         thisEntity:SetThink(function ()
             GunRestore()
@@ -52,7 +49,6 @@ function Activate(activateType)
         end,"restoregun",0.5)
         return
     end
-    
 
     thisEntity:SetThink(function()
         return PortalGun:init()
@@ -245,13 +241,9 @@ function PortalGun:shoot()
         return 0.1
     end
     if PortalGun.Player:IsDigitalActionOnForHand(0,PortalGun.BluePortalButton) and PortalGun.CantFireBlue == false then
-        --print("Blue")
-        --print(tostring(PortalGun.CantFireBlue))
         PortalGun:FireGun(Colors.Blue)
     end
     if PortalGun.Player:IsDigitalActionOnForHand(0,PortalGun.OrangePortalButton) and PortalGun.CantFireOrange == false then
-        --print("Orange")
-        --print(tostring(PortalGun.CantFireOrange))
         PortalGun:FireGun(Colors.Orange)
     end
     return 0.1
@@ -334,33 +326,26 @@ end
 function ActivatePortalGun()
     PortalGun.BlockFire = false
     Storage:SaveBoolean("BlockFire",false)
-    print("Activated")
 end
 function DeactivatePortalGun()
     PortalGun.BlockFire = true
     Storage:SaveBoolean("BlockFire",true)
-    print("Deactivated")
 end
 function EnableBluePortalGun()
     PortalGun.CantFireBlue = false
     Storage:SaveBoolean("CantFireBlue",false)
-    print("Enabled Blue")
 end
 function DisableBluePortalGun()
     PortalGun.CantFireBlue = true
     Storage:SaveBoolean("CantFireBlue",true)
-    print("Disabled Blue")
 end
 function EnableOrangePortalGun()
     PortalGun.CantFireOrange = false
     Storage:SaveBoolean("CantFireOrange",false)
-    print("Enabled Orange")
-
 end
 function DisableOrangePortalGun()
     PortalGun.CantFireOrange = true
     Storage:SaveBoolean("CantFireOrange",true)
-    print("Disabled Orange")
 end
 
 
