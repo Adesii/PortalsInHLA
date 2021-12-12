@@ -623,7 +623,10 @@ end
 
 function Activate(ActivateType)
     print("Portal Activated")
-    PortalManager.Storage = Storage
+    if _G.PortalManager ~= nil then
+        return
+    end
+    
     if ActivateType == 2  then
         print("Restoring Portals")
         thisEntity:SetThink(function ()
@@ -660,7 +663,7 @@ function Activate(ActivateType)
     thisEntity:SetThink(function()
         return PortalManager:UpdateView()
     end, "viewUpdater", 1)
-
+    PortalManager.Storage = Storage
     _G.PortalManager =_G.PortalManager or PortalManager
     _G.Debugging = _G.Debugging or Debugging
 end
