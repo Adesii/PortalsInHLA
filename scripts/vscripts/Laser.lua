@@ -143,8 +143,11 @@ laserReactables = {
 			return bluePortal:TransformPointEntityToWorld(orangePortalRelativePosition), newforward:Normalized()
 		end;
 		redirectLaser = function(self, laserindex, ent, laserForward, laserImpact, ignoredEnts, doDamage)
+			if laserindex > 32 then
+				return nil, {}
+			end
 			local origin, forward = self:getRedirectionInfo(ent, laserForward, laserImpact)
-			return TraceLaser(laserindex + 1, origin, forward, nil, {}, nil, nil, doDamage)
+			return TraceLaser(laserindex + 1, origin, forward, PortalManager.BluePortalGroup[1], ignoredEnts, nil, nil, doDamage)
 		end;
 		dontIgnoreAfterRedirection = true;
 		hasLaserInput = false;
@@ -181,8 +184,11 @@ laserReactables = {
 			return bluePortal:TransformPointEntityToWorld(orangePortalRelativePosition), newforward:Normalized()
 		end;
 		redirectLaser = function(self, laserindex, ent, laserForward, laserImpact, ignoredEnts, doDamage)
+			if laserindex > 32 then
+				return nil, {}
+			end
 			local origin, forward = self:getRedirectionInfo(ent, laserForward, laserImpact)
-			return TraceLaser(laserindex + 1, origin, forward, nil, {}, nil, nil, doDamage)
+			return TraceLaser(laserindex + 1, origin, forward, PortalManager.OrangePortalGroup[1], ignoredEnts, nil, nil, doDamage)
 		end;
 		dontIgnoreAfterRedirection = true;
 		hasLaserInput = false;
