@@ -3,8 +3,8 @@ local portaly = 55
 local portalz = 100
 local detectRadius = portaly
 
-local mins = Vector(-(portalx / 2), -(portaly / 2), -(portalz / 2))
-local maxs = Vector(portalx / 2, portaly / 2, portalz / 2)
+_G.mins = Vector(-(portalx / 2), -(portaly / 2), -(portalz / 2))
+_G.maxs = Vector(portalx / 2, portaly / 2, portalz / 2)
 
 Debugging = _G.Debugging or false
 
@@ -53,12 +53,12 @@ local FuncMonitorTemplate = {
     unique_target = "1",
     render_shadows = "1"
 }
-Colors = _G.Colors or {
+_G.Colors = _G.Colors or {
     Blue = "blue",
     Orange = "orange"
 }
 
-PortalManager = _G.PortalManager or {
+_G.PortalManager = _G.PortalManager or {
     PortableFunc = false,
 
     ColorEnts = {},
