@@ -118,7 +118,7 @@ laserReactables = {
 				return false
 			end
 
-			local bluePortal = PortalManager.GetConnectedPortal(Colors.Orange)
+			local bluePortal = PortalManager.BluePortalGroup[1]
 			if bluePortal == nil then
 				return false
 			end
@@ -139,16 +139,11 @@ laserReactables = {
 			local bluePortal = PortalManager.OrangePortalGroup[1]
 			local orangePortalRelativePosition = orangePortal:TransformPointWorldToEntity(laserImpact)
 			local orangePortalRelativeDirectionPosition = orangePortal:TransformPointWorldToEntity(laserImpact - laserForward)
-	
-
 			local newforward =   bluePortal:TransformPointEntityToWorld(orangePortalRelativeDirectionPosition) - bluePortal:TransformPointEntityToWorld(orangePortalRelativePosition) 
-
-
 			return bluePortal:TransformPointEntityToWorld(orangePortalRelativePosition), newforward:Normalized()
 		end;
 		redirectLaser = function(self, laserindex, ent, laserForward, laserImpact, ignoredEnts, doDamage)
 			local origin, forward = self:getRedirectionInfo(ent, laserForward, laserImpact)
-			DebugDrawLine(origin, origin + forward * 100, 255, 0, 0, true, 1)
 			return TraceLaser(laserindex + 1, origin, forward, nil, nil, nil, nil, doDamage)
 		end;
 		dontIgnoreAfterRedirection = true;
@@ -160,16 +155,17 @@ laserReactables = {
 			if PortalManager.BluePortalGroup[1] == nil or PortalManager.OrangePortalGroup[1] == nil then
 				return false
 			end
-			local orangePortal = PortalManager.GetConnectedPortal(Colors.Blue)
-			if orangePortal == nil then
+
+			local bluePortal = PortalManager.OrangePortalGroup[1]
+			if bluePortal == nil then
 				return false
 			end
 			
-			pos = orangePortal:TransformPointWorldToEntity(laserhitpos)
-			entMins = pos
-			entMaxs = pos
-			local orangeportalBBoxResult = BBoxIntersect( entMins, entMaxs,mins,maxs )
-			if orangeportalBBoxResult then
+			local pos = bluePortal:TransformPointWorldToEntity(laserhitpos)
+			local entMins = pos
+			local entMaxs = pos
+			local blueportalBBoxResult = BBoxIntersect( entMins, entMaxs,mins,maxs )
+			if blueportalBBoxResult then
 				return true
 			else
 				return false
@@ -180,12 +176,12 @@ laserReactables = {
 			local orangePortal = PortalManager.OrangePortalGroup[1]
 			local bluePortal = PortalManager.BluePortalGroup[1]
 			local orangePortalRelativePosition = orangePortal:TransformPointWorldToEntity(laserImpact)
-			--calculate the new Forward based on the orange portal
-			return bluePortal:TransformPointEntityToWorld(orangePortalRelativePosition), ((-laserForward)*bluePortal:GetForwardVector()):Normalized()
+			local orangePortalRelativeDirectionPosition = orangePortal:TransformPointWorldToEntity(laserImpact - laserForward)
+			local newforward =   bluePortal:TransformPointEntityToWorld(orangePortalRelativeDirectionPosition) - bluePortal:TransformPointEntityToWorld(orangePortalRelativePosition) 
+			return bluePortal:TransformPointEntityToWorld(orangePortalRelativePosition), newforward:Normalized()
 		end;
 		redirectLaser = function(self, laserindex, ent, laserForward, laserImpact, ignoredEnts, doDamage)
 			local origin, forward = self:getRedirectionInfo(ent, laserForward, laserImpact)
-			DebugDrawLine(origin, origin + forward * 100, 255, 0, 0, true, 1)
 			return TraceLaser(laserindex + 1, origin, forward, nil, nil, nil, nil, doDamage)
 		end;
 		dontIgnoreAfterRedirection = true;
