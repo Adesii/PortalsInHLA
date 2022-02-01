@@ -589,7 +589,7 @@ function PlayerShoot()
                 EntFireByHandle(thisEntity,traceTable.enthit,"FireUser2")
             end
             if PortalManager.PortableFunc then
-                if  traceTable.enthit:GetClassname() ~= "func_brush" and not string.starts(traceTable.enthit:GetName(),PortalManager.PortalPrefix) then
+                if  traceTable.enthit:GetClassname() ~= "func_brush" or not string.starts(traceTable.enthit:GetName(),PortalManager.PortalPrefix) then
                     return tickrate
                 end
             else
@@ -705,6 +705,9 @@ end
 
 function Spawn(spawnkeys)
     local prefix = spawnkeys:GetValue("Group00")
+    if prefix == nil then
+        return
+    end
     _G.PortalManager.PortalPrefix = string.gsub(prefix,".*_","",0)
     print(_G.PortalManager.PortalPrefix)
 end
