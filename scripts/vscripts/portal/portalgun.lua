@@ -271,11 +271,11 @@ function PortalGun:FireGun(Color)
             EntFireByHandle(thisEntity,traceTable.enthit,"FireUser2")
         end
         if PortalManager.PortableFunc then
-            if  traceTable.enthit:GetClassname() ~= "func_brush" then
+            if  traceTable.enthit:GetClassname() ~= "func_brush" and not string.starts(traceTable.enthit:GetName(),PortalManager.PortalPrefix) then
                 return tickrate
             end
         else
-            if  traceTable.enthit:GetClassname() == "func_brush" then
+            if  traceTable.enthit:GetClassname() == "func_brush" and not string.starts(traceTable.enthit:GetName(),PortalManager.PortalPrefix) then
                 return tickrate
             end
         end

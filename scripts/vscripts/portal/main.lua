@@ -67,6 +67,8 @@ _G.PortalManager = _G.PortalManager or {
 
     BlueCamera = {},
     OrangeCamera = {},
+
+    PortalPrefix = "",
 }
 
 PortalWhitelist= {
@@ -587,11 +589,11 @@ function PlayerShoot()
                 EntFireByHandle(thisEntity,traceTable.enthit,"FireUser2")
             end
             if PortalManager.PortableFunc then
-                if  traceTable.enthit:GetClassname() ~= "func_brush" then
+                if  traceTable.enthit:GetClassname() ~= "func_brush" and not string.starts(traceTable.enthit:GetName(),PortalManager.PortalPrefix) then
                     return tickrate
                 end
             else
-                if  traceTable.enthit:GetClassname() == "func_brush" then
+                if  traceTable.enthit:GetClassname() == "func_brush" and not string.starts(traceTable.enthit:GetName(),PortalManager.PortalPrefix) then
                     return tickrate
                 end
             end
@@ -699,4 +701,15 @@ end
 function CloseAllPortals(args)
     PortalManager:ClosePortal(Colors.Blue)
     PortalManager:ClosePortal(Colors.Orange)
+end
+
+function Spawn(spawnkeys)
+    local prefix = spawnkeys:GetValue("Group00")
+    _G.PortalManager.PortalPrefix = string.gsub(prefix,".*_","",0)
+    print(_G.PortalManager.PortalPrefix)
+end
+
+
+function string.starts(String,Start)
+    return string.sub(String,1,string.len(Start))==Start
 end
